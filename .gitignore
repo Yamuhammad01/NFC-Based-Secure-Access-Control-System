@@ -148,3 +148,4 @@ mongod.lock
 *.pid
 *.seed
 *.pid.lock
+ARCHITECTURE.md
