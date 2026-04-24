@@ -3,7 +3,7 @@ const router = express.Router();
 const accessController = require("../controllers/accessController");
 
 // POST  /api/access/tap       — Simulate an NFC tap (core endpoint)
-router.post("/tap", accessController.handleTap);
+router.post("/tap", accessController.tap);
 
 // GET   /api/access/logs      — Query access logs (admin dashboard)
 router.get("/logs", accessController.getLogs);

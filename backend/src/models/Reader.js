@@ -19,6 +19,11 @@ const readerSchema = new mongoose.Schema(
       type: Boolean,
       default: true,
     },
+    direction: {
+      type: String,
+      enum: ["in", "out"],
+      default: "in",
+    },
   },
   { timestamps: true }
 );
