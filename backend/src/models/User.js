@@ -1,33 +1,45 @@
 const mongoose = require("mongoose");
-const { ROLES } = require("../config/constants");
+const { ROLES, STATUS } = require("../config/constants");
 
 const userSchema = new mongoose.Schema(
   {
-    // Personal info
-    firstName: { type: String, required: true, trim: true },
-    lastName: { type: String, required: true, trim: true },
-    email: { type: String, required: true, unique: true, lowercase: true },
-    password: { type: String, required: true, select: false },
-
-    // RBAC
+    // NFC Card UID (unique identifier for the user's primary credential)
+    uid: {
+      type: String,
+      required: true,
+      unique: true,
+      uppercase: true,
+      trim: true,
+    },
+    name: {
+      type: String,
+      required: true,
+      trim: true,
+    },
     role: {
       type: String,
       enum: Object.values(ROLES),
       default: ROLES.STUDENT,
     },
-
-    // Department / affiliation
-    department: { type: String, trim: true },
-    studentId: { type: String, unique: true, sparse: true },
-
-    // Status
-    isActive: { type: Boolean, default: true },
-
-    // Linked NFC card (populated from Card model)
-    activeCard: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Card",
-      default: null,
+    accessLevel: {
+      type: Number,
+      enum: [1, 2, 3],
+      default: 1,
+    },
+    status: {
+      type: String,
+      enum: Object.values(STATUS),
+      default: STATUS.ACTIVE,
+    },
+    // Anti-passback tracking
+    isInside: {
+      type: Boolean,
+      default: false,
+    },
+    // Time-based access window (24h format HH:mm)
+    allowedTime: {
+      start: { type: String, default: "08:00" },
+      end: { type: String, default: "18:00" },
     },
   },
   { timestamps: true }

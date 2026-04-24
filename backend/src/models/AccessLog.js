@@ -1,51 +1,51 @@
 const mongoose = require("mongoose");
-const { ACCESS_RESULT, DENIAL_REASON } = require("../config/constants");
+const { ACCESS_RESULT } = require("../config/constants");
 
 const accessLogSchema = new mongoose.Schema(
   {
-    // Who tapped
-    card: { type: mongoose.Schema.Types.ObjectId, ref: "Card", default: null },
-    uid: { type: String, required: true },
-    user: { type: mongoose.Schema.Types.ObjectId, ref: "User", default: null },
-
-    // Where
-    reader: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Reader",
+    uid: {
+      type: String,
+      required: true,
+      uppercase: true,
+    },
+    userName: {
+      type: String,
       required: true,
     },
-    zone: { type: String, required: true },
-
-    // Result
+    role: {
+      type: String,
+      required: true,
+    },
+    readerId: {
+      type: String,
+      required: true,
+      uppercase: true,
+    },
+    door: {
+      type: String,
+      required: true,
+    },
     result: {
       type: String,
       enum: Object.values(ACCESS_RESULT),
       required: true,
     },
-
-    // Denial detail (null if granted)
-    denialReason: {
+    // Optional reason (revoked, insufficient access, anti-passback, etc.)
+    reason: {
       type: String,
-      enum: [...Object.values(DENIAL_REASON), null],
       default: null,
     },
-
-    // Direction for anti-passback
-    direction: {
-      type: String,
-      enum: ["entry", "exit"],
-      required: true,
+    // Explicit timestamp for the event
+    timestamp: {
+      type: Date,
+      default: Date.now,
     },
-
-    // Timestamp (auto via Mongoose, but explicit for queries)
-    timestamp: { type: Date, default: Date.now },
   },
-  { timestamps: true }
+  { timestamps: false } // We use the explicit 'timestamp' field
 );
 
-// Index for fast querying by user, time range, and result
-accessLogSchema.index({ user: 1, timestamp: -1 });
-accessLogSchema.index({ reader: 1, timestamp: -1 });
-accessLogSchema.index({ result: 1 });
+// Index for fast lookups
+accessLogSchema.index({ uid: 1, timestamp: -1 });
+accessLogSchema.index({ readerId: 1, timestamp: -1 });
 
 module.exports = mongoose.model("AccessLog", accessLogSchema);

@@ -12,7 +12,6 @@ const errorHandler = require("./middlewares/errorHandler");
 // Route imports
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
-const cardRoutes = require("./routes/cardRoutes");
 const accessRoutes = require("./routes/accessRoutes");
 const readerRoutes = require("./routes/readerRoutes");
 
@@ -40,7 +39,6 @@ app.use("/api", limiter);
 // ──────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
-app.use("/api/cards", cardRoutes);
 app.use("/api/access", accessRoutes);
 app.use("/api/readers", readerRoutes);
 
