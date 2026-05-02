@@ -10,6 +10,7 @@ const { ACCESS_RESULT } = require("../config/constants");
 exports.tap = async (req, res) => {
   const { uid, readerId, door } = req.body;
 
+  console.log(req.body)
   try {
     // 1. Validate Reader
     const reader = await Reader.findOne({ readerId });
@@ -101,7 +102,7 @@ function getRequiredLevel(door) {
 function isWithinAllowedTime(allowedTime) {
   const now = new Date();
   const currentStr = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
-  
+
   return currentStr >= allowedTime.start && currentStr <= allowedTime.end;
 }
 
@@ -110,7 +111,7 @@ function isWithinAllowedTime(allowedTime) {
  */
 async function logAndDeny(res, context, reason, message) {
   const { uid, readerId, door, user } = context;
-  
+
   await AccessLog.create({
     uid,
     userName: user ? user.name : "Unknown",
