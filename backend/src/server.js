@@ -68,6 +68,11 @@ const startServer = async () => {
   });
 };
 
-startServer();
+if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
+  startServer();
+} else {
+  // connect to the DB on vercel 
+  connectDB();
+}
 
 module.exports = app;
