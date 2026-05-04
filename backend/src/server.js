@@ -15,13 +15,16 @@ const userRoutes = require("./routes/userRoutes");
 const accessRoutes = require("./routes/accessRoutes");
 const readerRoutes = require("./routes/readerRoutes");
 
+
+
 const app = express();
 
 // ──────────────────────────────────────────────
 //  Global Middleware
 // ──────────────────────────────────────────────
 app.use(helmet()); // Security headers
-app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+//app.use(cors({ origin: process.env.CLIENT_URL, credentials: true }));
+app.use(cors()); // Allow all origins for testing
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev")); // HTTP request logging
