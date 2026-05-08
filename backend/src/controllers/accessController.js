@@ -35,12 +35,12 @@ exports.tap = async (req, res) => {
       return logAndDeny(res, { uid, readerId, door, reader, user }, "User Suspended", "Access temporarily suspended");
     }
 
-    // 4. Anti-Passback Logic
+     /*// 4. Anti-Passback Logic
     // Only enforced for 'in' direction. If already inside, can't enter again.
     if (reader.direction === "in" && user.isInside) {
       return logAndDeny(res, { uid, readerId, door, reader, user }, "Anti-Passback Violation", "User is already registered as 'Inside'");
     }
-    /*// Only 'in' readers can set isInside to true, 'out' readers set it to false.
+    // Only 'in' readers can set isInside to true, 'out' readers set it to false.
     const newInsideStatus = reader.direction === "in" ? true : false;
 
     // 5. Time-Based Access
@@ -55,7 +55,7 @@ exports.tap = async (req, res) => {
     }
 
     // 7. Success - Update User State & Log
-    user.isInside = newInsideStatus;
+    //    user.isInside = newInsideStatus;
     await user.save();
 
     await AccessLog.create({
