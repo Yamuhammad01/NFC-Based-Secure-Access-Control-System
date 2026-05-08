@@ -40,11 +40,11 @@ exports.tap = async (req, res) => {
     if (reader.direction === "in" && user.isInside) {
       return logAndDeny(res, { uid, readerId, door, reader, user }, "Anti-Passback Violation", "User is already registered as 'Inside'");
     }
-    // Only 'in' readers can set isInside to true, 'out' readers set it to false.
+    /*// Only 'in' readers can set isInside to true, 'out' readers set it to false.
     const newInsideStatus = reader.direction === "in" ? true : false;
 
     // 5. Time-Based Access
-    /* if (!isWithinAllowedTime(user.allowedTime)) {
+     if (!isWithinAllowedTime(user.allowedTime)) {
       return logAndDeny(res, { uid, readerId, door, reader, user }, "Outside Allowed Hours", `Access only permitted between ${user.allowedTime.start} and ${user.allowedTime.end}`);
     } */
 
