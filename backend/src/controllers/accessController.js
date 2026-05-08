@@ -44,9 +44,9 @@ exports.tap = async (req, res) => {
     const newInsideStatus = reader.direction === "in" ? true : false;
 
     // 5. Time-Based Access
-    if (!isWithinAllowedTime(user.allowedTime)) {
+    /* if (!isWithinAllowedTime(user.allowedTime)) {
       return logAndDeny(res, { uid, readerId, door, reader, user }, "Outside Allowed Hours", `Access only permitted between ${user.allowedTime.start} and ${user.allowedTime.end}`);
-    }
+    } */
 
     // 6. RBAC (Access Levels)
     const requiredLevel = getRequiredLevel(door);
