@@ -1,5 +1,5 @@
 {
-  "name": "nfc-access-control-backend",
+  "name": "nfc-backend",
   "version": "1.0.0",
   "description": "NFC-Based Secure Access Control System — Express API",
   "main": "src/server.js",

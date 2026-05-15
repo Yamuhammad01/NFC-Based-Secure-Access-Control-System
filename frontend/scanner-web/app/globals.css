@@ -1,0 +1,114 @@
+@import "tailwindcss";
+
+@theme {
+  --color-navy: #0a0e1a;
+  --color-panel: #0f1629;
+  --color-primary: #3b82f6;
+  --color-primary-light: #60a5fa;
+  --color-success: #22c55e;
+  --color-border: rgba(59, 130, 246, 0.2);
+  --color-text-secondary: #94a3b8;
+  --color-glow: rgba(59, 130, 246, 0.4);
+}
+
+:root {
+  --background: #0a0e1a;
+  --foreground: #ffffff;
+}
+
+.dark {
+  --background: #0a0e1a;
+  --foreground: #ffffff;
+}
+
+/* Glassmorphism */
+.glass {
+  background: rgba(15, 22, 41, 0.7);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.glass-glow {
+  box-shadow: 0 0 20px rgba(59, 130, 246, 0.1);
+}
+
+/* Ripple rings */
+@keyframes ripple {
+  0% { transform: scale(1); opacity: 0.6; }
+  100% { transform: scale(1.5); opacity: 0; }
+}
+
+.animate-ripple {
+  animation: ripple 2s cubic-bezier(0, 0, 0.2, 1) infinite;
+}
+
+/* QR card float */
+@keyframes float {
+  0%, 100% { transform: translateY(0px) rotateY(0deg); }
+  50% { transform: translateY(-15px) rotateY(10deg); }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+/* Scan line */
+@keyframes scanLine {
+  0% { top: 0%; } 
+  100% { top: 100%; }
+}
+
+.animate-scan-line {
+  animation: scanLine 2s linear infinite;
+}
+
+/* Pulse glow on active step */
+@keyframes stepGlow {
+  0%, 100% { box-shadow: 0 0 10px #3b82f6; }
+  50% { box-shadow: 0 0 30px #3b82f6, 0 0 60px #3b82f6; }
+}
+
+.animate-step-glow {
+  animation: stepGlow 2s infinite;
+}
+
+/* Particle burst on success */
+@keyframes particle {
+  0% { transform: translate(0,0) scale(1); opacity: 1; }
+  100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; }
+}
+
+.particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: #22c55e;
+  border-radius: 50%;
+  animation: particle 0.8s ease-out forwards;
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: 'Inter', sans-serif;
+  overflow-x: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: #0a0e1a;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1e293b;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #334155;
+}

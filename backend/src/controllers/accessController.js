@@ -121,6 +121,7 @@ async function logAndDeny(res, context, reason, message) {
     result: ACCESS_RESULT.DENIED,
     reason,
     timestamp: new Date()
+
   });
 
   return res.status(403).json({

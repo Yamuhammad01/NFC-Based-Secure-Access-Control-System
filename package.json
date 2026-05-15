@@ -1,0 +1,24 @@
+{
+  "name": "nfc-access-control-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Unified NFC Access Control System Monorepo",
+  "workspaces": [
+    "frontend/admin-web",
+    "frontend/scanner-web",
+    "frontend/simulation-web",
+    "backend"
+  ],
+  "scripts": {
+    "dev:admin": "npm run dev --workspace=nfc-admin-web",
+    "dev:scanner": "npm run dev --workspace=nfc-scanner-web",
+    "dev:simulation": "npm run dev --workspace=nfc-simulation-web",
+    "dev:backend": "npm run dev --workspace=nfc-backend",
+    "dev": "concurrently -n \"BACKEND,ADMIN,SCANNER,SIM\" -c \"bgBlue,bgGreen,bgMagenta,bgCyan\" \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:scanner\" \"npm run dev:simulation\"",
+    "build": "npm run build --workspaces",
+    "lint": "npm run lint --workspaces"
+  },
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
