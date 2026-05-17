@@ -31,10 +31,10 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(morgan("dev")); // HTTP request logging
 
-// Rate limiting (100 requests per 15 min per IP)
+// Rate limiting (much higher in local development to avoid blocking debug tools)
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: 100,
+  max: 5000,
   message: { error: "Too many requests, please try again later." },
 });
 app.use("/api", limiter);

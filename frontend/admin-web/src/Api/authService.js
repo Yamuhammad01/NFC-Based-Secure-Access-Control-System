@@ -208,3 +208,85 @@ export const getAccessLogs = async () => {
   }
 };
 
+// Cardholder & Card Lifecycle Management APIs
+export const getAllUsers = async () => {
+  try {
+    const response = await api.get("/users");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch cardholders:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const createUser = async (userData) => {
+  try {
+    const response = await api.post("/users", userData);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to register cardholder:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const updateUser = async (id, userData) => {
+  try {
+    const response = await api.put(`/users/${id}`, userData);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to update cardholder:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const reportLostCard = async (id) => {
+  try {
+    const response = await api.put(`/users/${id}/lost`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to report lost card:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const reportStolenCard = async (id) => {
+  try {
+    const response = await api.put(`/users/${id}/stolen`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to suspend stolen card:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const replaceCard = async (id, newUid) => {
+  try {
+    const response = await api.put(`/users/${id}/replace`, { uid: newUid });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to replace card:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const deactivateUser = async (id) => {
+  try {
+    const response = await api.delete(`/users/${id}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to deactivate account:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Fetch access history logs for a specific cardholder UID
+export const getUserAccessLogs = async (uid) => {
+  try {
+    const response = await api.get(`/access/logs/user/${uid}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch user access logs:", error.response?.data || error.message);
+    throw error;
+  }
+};
+

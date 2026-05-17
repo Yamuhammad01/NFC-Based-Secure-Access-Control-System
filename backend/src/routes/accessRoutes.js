@@ -8,7 +8,7 @@ router.post("/tap", accessController.tap);
 // GET   /api/access/logs      — Query access logs (admin dashboard)
 router.get("/logs", accessController.getLogs);
 
-// GET   /api/access/logs/user/:userId — Logs for a specific user
-router.get("/logs/user/:userId", accessController.getLogsByUser);
+// GET   /api/access/logs/user/:uid — Logs for a specific user
+router.get("/logs/user/:uid", accessController.getLogsByUser);
 
 module.exports = router;

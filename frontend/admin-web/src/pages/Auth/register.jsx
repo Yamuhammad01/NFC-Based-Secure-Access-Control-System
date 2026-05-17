@@ -27,7 +27,12 @@ export default function Register() {
     // Check if backend provides auto-login token
     if (response.access_token) {
       localStorage.setItem("authToken", response.access_token);
-      // Add delay to ensure token is properly set before navigation
+      
+      // Cleanly save registered user role (defaulting to staff if not provided)
+      const signupRole = (response.user?.role || "staff").toLowerCase();
+      localStorage.setItem("userRole", signupRole);
+
+      // Add delay to ensure token and role are properly set before navigation
       await new Promise(resolve => setTimeout(resolve, 1000));
       // Navigate to profile if auto-login is successful
       navigate('/dashboard/staff/profile', { 

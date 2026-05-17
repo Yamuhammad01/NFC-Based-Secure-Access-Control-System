@@ -51,6 +51,13 @@ const DashboardLayout = ({ children }) => {
     try {
       const profileData = await getProfile();
       setUserProfile(profileData);
+      
+      // Auto-synchronize role dynamically from actual database profile to prevent dashboard clashing
+      if (profileData && profileData.role) {
+        const dbRole = profileData.role.toLowerCase();
+        localStorage.setItem("userRole", dbRole);
+        setUserRole(dbRole);
+      }
     } catch (error) {
       console.error('Failed to fetch profile:', error);
     } finally {
@@ -82,6 +89,7 @@ const DashboardLayout = ({ children }) => {
   const adminMenu = [
     { name: "Dashboard", icon: <FaUsers className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-100" },
     { name: "Employees", icon: <FaUsers className="text-indigo-600" />, href: "/dashboard/admin/employees", bg: "bg-indigo-100" },
+    { name: "Cards", icon: <FaIdCard className="text-indigo-600" />, href: "/dashboard/admin/cards", bg: "bg-indigo-100" },
     { name: "Audit Log", icon: <FaChartBar className="text-orange-600" />, href: "/dashboard/admin/audit-logs", bg: "bg-orange-100" },
   ];
 

@@ -10,6 +10,8 @@ import ResetPassword from './pages/Auth/resetPassword'
 // import AdminDashboard from '../AdminDashboard'
 import EmployeeTable from './pages/dashboard/admin/employees'
 import Adminprofile from './pages/dashboard/admin/adminprofile'
+import AuditLogs from './pages/dashboard/admin/auditLogs'
+import CardManagement from './pages/dashboard/admin/cards'
 import BusinessCard from './pages/dashboard/staff/BusinessCard'
 import StaffId from './pages/dashboard/staff/staffId'
 import StaffProfile from './pages/dashboard/staff/Profile'
@@ -55,6 +57,8 @@ createRoot(document.getElementById('root')).render(
         {/* <Route path="/dashboard/admin" element={<AdminDashboard />} /> */}
         <Route path="/dashboard/admin" element={<Adminprofile />} />
         <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />
+        <Route path="/dashboard/admin/cards" element={<CardManagement />} />
+        <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/dashboard/staff" element={<Navigate to="/dashboard/staff/profile" replace />} />
         <Route path="/dashboard/staff/profile" element={<StaffProfile />} />
         <Route path="/dashboard/staff/BusinessCard" element={<BusinessCard />} />
