@@ -197,3 +197,14 @@ export const getUserRole = async () => {
   return "staff";
 };
 
+// Get access/audit logs
+export const getAccessLogs = async () => {
+  try {
+    const response = await api.get("/access/logs");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch access logs:", error.response?.data || error.message);
+    throw error;
+  }
+};
+

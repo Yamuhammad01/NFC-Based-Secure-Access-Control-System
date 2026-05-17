@@ -14,6 +14,8 @@ const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
 const accessRoutes = require("./routes/accessRoutes");
 const readerRoutes = require("./routes/readerRoutes");
+const adminRoutes = require("./routes/adminRoutes");
+const profileRoutes = require("./routes/profileRoutes");
 
 
 
@@ -44,6 +46,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/users", userRoutes);
 app.use("/api/access", accessRoutes);
 app.use("/api/readers", readerRoutes);
+app.use(["/api/Admin", "/api/api/Admin"], adminRoutes);
+app.use("/api", profileRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

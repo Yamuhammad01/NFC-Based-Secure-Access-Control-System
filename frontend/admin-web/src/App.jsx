@@ -7,6 +7,7 @@ import ForgotPassword from './pages/Auth/forgotPassword';
 import ResetPassword from './pages/Auth/resetPassword';
 import EmployeeTable from './pages/dashboard/admin/employees';
 import Adminprofile from './pages/dashboard/admin/adminprofile';
+import AuditLogs from './pages/dashboard/admin/auditLogs';
 import BusinessCard from './pages/dashboard/staff/BusinessCard';
 import StaffId from './pages/dashboard/staff/staffId';
 import StaffProfile from './pages/dashboard/staff/Profile';
@@ -50,6 +51,7 @@ function App() {
         <Route path="/resetPassword" element={<ResetPassword />} />
         <Route path="/dashboard/admin" element={<Adminprofile />} />
         <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />
+        <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/dashboard/staff" element={<Navigate to="/dashboard/staff/profile" replace />} />
         <Route path="/dashboard/staff/profile" element={<StaffProfile />} />
         <Route path="/dashboard/staff/BusinessCard" element={<BusinessCard />} />
