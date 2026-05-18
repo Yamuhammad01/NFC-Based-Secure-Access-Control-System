@@ -20,6 +20,7 @@ import StaffLogs from './pages/dashboard/staff/logs'
 import StaffTimeline from './pages/dashboard/staff/timeline'
 import CardReplacement from './pages/dashboard/staff/replacement'
 import SecurityNotifications from './pages/dashboard/staff/notifications'
+import TempAccessRequest from './pages/dashboard/staff/tempAccess'
 import Settings from './pages/dashboard/staff/settings'
 import './index.css'
 
@@ -74,6 +75,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/staff/timeline" element={<StaffTimeline />} />
         <Route path="/dashboard/staff/replacement" element={<CardReplacement />} />
         <Route path="/dashboard/staff/notifications" element={<SecurityNotifications />} />
+        <Route path="/dashboard/staff/temp-access" element={<TempAccessRequest />} />
         <Route path="/dashboard" element={<Navigate to="/dashboard/staff/profile" replace />} />
       </Routes>
     </Router>
