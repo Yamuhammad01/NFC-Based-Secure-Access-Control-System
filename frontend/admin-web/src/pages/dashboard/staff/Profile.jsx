@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardLayout from "../../../component/DashboardLayout";
+import NfcCardWidget from "../../../component/NfcCardWidget";
 import { QRCodeCanvas } from "qrcode.react";
 import { 
   FaUser, 
@@ -238,57 +239,14 @@ const StaffProfile = () => {
         {/* MIDDLE SECTION - CREDENTIAL SPECIFICATIONS & PRIVILEGES */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           
-          {/* Card 1: NFC Credential Specs */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between">
-            <div>
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
-                  <FaIdBadge className="text-indigo-600" />
-                  NFC Credential Specs
-                </h3>
-                <span className="text-xs font-bold text-gray-400 bg-slate-100 px-2 py-1 rounded">
-                  System Data
-                </span>
-              </div>
-
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b pb-3">
-                  <span className="text-xs text-gray-500 font-bold uppercase">Matric / Staff ID</span>
-                  <span className="text-sm text-slate-800 font-extrabold">{profile.staffId}</span>
-                </div>
-                <div className="flex items-center justify-between border-b pb-3">
-                  <span className="text-xs text-gray-500 font-bold uppercase flex items-center gap-1.5">
-                    <FaKey className="text-slate-400" /> Card UID
-                  </span>
-                  <span className="text-sm font-mono text-slate-800 font-extrabold bg-slate-50 px-2.5 py-0.5 rounded border border-slate-200 uppercase">
-                    {profile.uid}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between border-b pb-3">
-                  <span className="text-xs text-gray-500 font-bold uppercase flex items-center gap-1.5">
-                    <FaClock className="text-slate-400" /> Access window
-                  </span>
-                  <span className="text-sm text-slate-800 font-extrabold flex items-center gap-1">
-                    {profile.allowedTime?.start} - {profile.allowedTime?.end}
-                  </span>
-                </div>
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-gray-500 font-bold uppercase flex items-center gap-1.5">
-                    <FaShieldAlt className="text-slate-400" /> Access Privilege
-                  </span>
-                  <span className="badge badge-info text-white font-extrabold text-xs">
-                    Level {profile.accessLevel}
-                  </span>
-                </div>
-              </div>
-            </div>
-            
-            <div className="mt-6 pt-4 border-t border-slate-100 bg-slate-50 -mx-6 -mb-6 p-4 rounded-b-2xl">
-              <p className="text-[11px] text-gray-500 leading-relaxed font-semibold">
-                * Carry this physical card on campus. Report loss immediately to secure your departmental access parameters.
-              </p>
-            </div>
-          </div>
+          {/* Reusable NFC Card Information Widget */}
+          <NfcCardWidget 
+            uid={profile.uid}
+            status={profile.status}
+            issuedDate="12 Jan 2026"
+            expiryDate="12 Jan 2030"
+            accessLevel={profile.accessLevel}
+          />
 
           {/* Card 2: Interactive Access Matrix */}
           <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 lg:col-span-2">
