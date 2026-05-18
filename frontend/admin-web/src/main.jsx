@@ -16,6 +16,8 @@ import BusinessCard from './pages/dashboard/staff/BusinessCard'
 import StaffId from './pages/dashboard/staff/staffId'
 import StaffProfile from './pages/dashboard/staff/Profile'
 import StaffPermissions from './pages/dashboard/staff/permissions'
+import StaffLogs from './pages/dashboard/staff/logs'
+import StaffTimeline from './pages/dashboard/staff/timeline'
 import Settings from './pages/dashboard/staff/settings'
 import './index.css'
 
@@ -66,6 +68,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/staff/staffId" element={<StaffId />} />
         <Route path="/dashboard/staff/settings" element={<Settings />} />
         <Route path="/dashboard/staff/permissions" element={<StaffPermissions />} />
+        <Route path="/dashboard/staff/logs" element={<StaffLogs />} />
+        <Route path="/dashboard/staff/timeline" element={<StaffTimeline />} />
         <Route path="/dashboard" element={<Navigate to="/dashboard/staff/profile" replace />} />
       </Routes>
     </Router>

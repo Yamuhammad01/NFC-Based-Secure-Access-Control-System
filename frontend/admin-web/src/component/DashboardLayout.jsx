@@ -13,6 +13,8 @@ import {
   FaChartBar,
   FaCogs,
   FaShieldAlt,
+  FaHistory,
+  FaStream,
 } from "react-icons/fa";
 import { getProfile, logout } from "../Api/authService";
 
@@ -84,6 +86,8 @@ const DashboardLayout = ({ children }) => {
     { name: "Business Card", icon: <FaIdCard className="text-blue-600" />, href: "/dashboard/staff/BusinessCard", bg: "bg-blue-100" },
     { name: "Smart ID", icon: <FaAddressCard className="text-green-600" />, href: "/dashboard/staff/staffId", bg: "bg-green-100" },
     { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/staff/permissions", bg: "bg-rose-100" },
+    { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/staff/logs", bg: "bg-blue-100" },
+    { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/staff/timeline", bg: "bg-violet-100" },
     { name: "Settings", icon: <FaCogs className="text-teal-600" />, href: "/dashboard/staff/settings", bg: "bg-teal-100" },
   ];
 
