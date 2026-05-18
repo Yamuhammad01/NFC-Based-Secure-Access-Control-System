@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardLayout from "../../../component/DashboardLayout";
 import NfcCardWidget from "../../../component/NfcCardWidget";
+import ReportCardModal from "../../../component/ReportCardModal";
 import { QRCodeCanvas } from "qrcode.react";
 import { 
   FaUser, 
@@ -28,6 +29,7 @@ const StaffProfile = () => {
   const [logsLoading, setLogsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [imageError, setImageError] = useState(false);
+  const [reportModalOpen, setReportModalOpen] = useState(false);
 
   // Core Mock Fallback Data (reflecting a prestigious University registry)
   const defaultMockProfile = {
@@ -368,7 +370,49 @@ const StaffProfile = () => {
           )}
         </div>
 
+        {/* ── REPORT CARD ISSUE TRIGGER CARD ──────────────────────────────── */}
+        <div className="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-6 p-6">
+            <div className="flex items-start gap-4">
+              <div className="p-3 bg-rose-100 rounded-xl flex-shrink-0">
+                <svg xmlns="http://www.w3.org/2000/svg" className="text-rose-600 w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+              </div>
+              <div>
+                <h3 className="text-base font-extrabold text-slate-800">Report a Card Issue</h3>
+                <p className="text-xs text-slate-500 font-medium mt-0.5 max-w-md leading-relaxed">
+                  Lost, stolen, or damaged? Immediately notify the security system to protect your university access credentials.
+                </p>
+              </div>
+            </div>
+            <button
+              onClick={() => setReportModalOpen(true)}
+              className="flex-shrink-0 flex items-center gap-2 bg-rose-600 hover:bg-rose-700 text-white text-sm font-extrabold px-5 py-3 rounded-xl transition-all shadow-sm shadow-rose-600/20 hover:shadow-md focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2 w-full sm:w-auto justify-center"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2.5}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+              </svg>
+              Report Card Issue
+            </button>
+          </div>
+          <div className="bg-rose-50 border-t border-rose-100 px-6 py-3">
+            <p className="text-[10px] text-rose-600 font-bold uppercase tracking-wide">
+              ⚠ Security Notice — Reporting a lost or stolen card will immediately affect your physical gate access.
+            </p>
+          </div>
+        </div>
+
       </div>
+
+      {/* Report Card Modal */}
+      <ReportCardModal
+        isOpen={reportModalOpen}
+        onClose={() => setReportModalOpen(false)}
+        userId={profile?.id}
+        cardUid={profile?.uid}
+      />
+
     </DashboardLayout>
   );
 };

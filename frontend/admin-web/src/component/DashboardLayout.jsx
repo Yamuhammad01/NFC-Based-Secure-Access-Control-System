@@ -15,6 +15,7 @@ import {
   FaShieldAlt,
   FaHistory,
   FaStream,
+  FaExchangeAlt,
 } from "react-icons/fa";
 import { getProfile, logout } from "../Api/authService";
 
@@ -88,7 +89,9 @@ const DashboardLayout = ({ children }) => {
     { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/staff/permissions", bg: "bg-rose-100" },
     { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/staff/logs", bg: "bg-blue-100" },
     { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/staff/timeline", bg: "bg-violet-100" },
-    { name: "Settings", icon: <FaCogs className="text-teal-600" />, href: "/dashboard/staff/settings", bg: "bg-teal-100" },
+    { name: "Card Replacement",       icon: <FaExchangeAlt className="text-amber-600" />,  href: "/dashboard/staff/replacement",    bg: "bg-amber-100"  },
+    { name: "Notifications",           icon: <FaBell        className="text-indigo-600" />, href: "/dashboard/staff/notifications",  bg: "bg-indigo-100", badge: true },
+    { name: "Settings",               icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/staff/settings",      bg: "bg-teal-100"   },
   ];
 
   // Sidebar menus for admin
@@ -190,23 +193,38 @@ const DashboardLayout = ({ children }) => {
 
           {/* Menu */}
           <ul className="space-y-2">
-            {menuItems.map((item) => (
-              <li key={item.name}>
-                <button
-                  onClick={() => handleMenuClick(item.href)}
-                  className={`flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 text-gray-700 hover:text-blue-700 transition-all duration-200 group w-full text-left ${
-                    location.pathname === item.href ? "bg-blue-50 text-blue-700" : ""
-                  }`}
-                >
-                  <div
-                    className={`p-2 rounded-lg group-hover:opacity-80 transition-colors ${item.bg}`}
+            {menuItems.map((item) => {
+              // Live unread count for notification badge
+              let badgeCount = 0;
+              if (item.badge) {
+                try {
+                  const readIds = new Set(JSON.parse(localStorage.getItem("securityNotifications_read") || "[]"));
+                  const TOTAL_NOTIFS = 7; // matches MOCK_NOTIFICATIONS length
+                  badgeCount = TOTAL_NOTIFS - readIds.size;
+                  if (badgeCount < 0) badgeCount = 0;
+                } catch { /* ignore */ }
+              }
+              return (
+                <li key={item.name}>
+                  <button
+                    onClick={() => handleMenuClick(item.href)}
+                    className={`flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 text-gray-700 hover:text-blue-700 transition-all duration-200 group w-full text-left ${
+                      location.pathname === item.href ? "bg-blue-50 text-blue-700" : ""
+                    }`}
                   >
-                    {item.icon}
-                  </div>
-                  <span className="font-medium">{item.name}</span>
-                </button>
-              </li>
-            ))}
+                    <div className={`p-2 rounded-lg group-hover:opacity-80 transition-colors ${item.bg}`}>
+                      {item.icon}
+                    </div>
+                    <span className="font-medium flex-1">{item.name}</span>
+                    {item.badge && badgeCount > 0 && (
+                      <span className="ml-auto bg-rose-500 text-white text-[10px] font-extrabold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
+                        {badgeCount}
+                      </span>
+                    )}
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </aside>
       </div>

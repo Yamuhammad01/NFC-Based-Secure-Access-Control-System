@@ -18,6 +18,8 @@ import StaffProfile from './pages/dashboard/staff/Profile'
 import StaffPermissions from './pages/dashboard/staff/permissions'
 import StaffLogs from './pages/dashboard/staff/logs'
 import StaffTimeline from './pages/dashboard/staff/timeline'
+import CardReplacement from './pages/dashboard/staff/replacement'
+import SecurityNotifications from './pages/dashboard/staff/notifications'
 import Settings from './pages/dashboard/staff/settings'
 import './index.css'
 
@@ -70,6 +72,8 @@ createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/staff/permissions" element={<StaffPermissions />} />
         <Route path="/dashboard/staff/logs" element={<StaffLogs />} />
         <Route path="/dashboard/staff/timeline" element={<StaffTimeline />} />
+        <Route path="/dashboard/staff/replacement" element={<CardReplacement />} />
+        <Route path="/dashboard/staff/notifications" element={<SecurityNotifications />} />
         <Route path="/dashboard" element={<Navigate to="/dashboard/staff/profile" replace />} />
       </Routes>
     </Router>
