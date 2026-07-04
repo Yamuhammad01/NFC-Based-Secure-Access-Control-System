@@ -75,7 +75,14 @@ const DashboardLayout = ({ children }) => {
   };
 
   const confirmLogout = () => {
-    logout(); // Clear auth token
+    logout(); // Clear auth token + userRole via authService
+    // Clear all app-specific localStorage keys
+    [
+      "userRole",
+      "cardReplacementRequest",
+      "tempAccessRequests",
+      "securityNotifications_read",
+    ].forEach((key) => localStorage.removeItem(key));
     setShowLogoutModal(false);
     navigate("/login", { replace: true });
   };
@@ -85,8 +92,6 @@ const DashboardLayout = ({ children }) => {
   // Sidebar menus for staff
   const staffMenu = [
     { name: "Profile", icon: <FaUser className="text-purple-600" />, href: "/dashboard/staff/profile", bg: "bg-purple-100" },
-    { name: "Business Card", icon: <FaIdCard className="text-blue-600" />, href: "/dashboard/staff/BusinessCard", bg: "bg-blue-100" },
-    { name: "Smart ID", icon: <FaAddressCard className="text-green-600" />, href: "/dashboard/staff/staffId", bg: "bg-green-100" },
     { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/staff/permissions", bg: "bg-rose-100" },
     { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/staff/logs", bg: "bg-blue-100" },
     { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/staff/timeline", bg: "bg-violet-100" },
@@ -128,7 +133,7 @@ const DashboardLayout = ({ children }) => {
           </div>
           <div className="flex-1">
             <span className="text-xl md:text-2xl font-bold text-blue-700 flex items-center gap-2">
-              Smart ID
+              Access Control Dashboard
             </span>
           </div>
           <div className="flex-none flex items-center gap-2">
@@ -228,21 +233,73 @@ const DashboardLayout = ({ children }) => {
               );
             })}
           </ul>
+
+          {/* ── Sidebar logout button ──────────────────────────────── */}
+          <div className="mt-auto pt-6 border-t border-slate-100">
+            <button
+              onClick={handleLogout}
+              className="flex items-center gap-3 w-full p-3 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 group font-semibold"
+            >
+              <div className="p-2 bg-rose-100 rounded-lg group-hover:bg-rose-200 transition-colors">
+                <FaSignOutAlt className="text-rose-600" />
+              </div>
+              <span>Log Out</span>
+            </button>
+          </div>
         </aside>
       </div>
 
-      {/* Logout Modal */}
+      {/* ── PREMIUM LOGOUT CONFIRMATION MODAL ───────────────────────────── */}
       {showLogoutModal && (
-        <dialog open className="modal modal-open">
-          <div className="modal-box">
-            <h3 className="font-bold text-lg">Log out</h3>
-            <p className="py-4">Do you want to log out?</p>
-            <div className="modal-action">
-              <button className="btn btn-ghost" onClick={cancelLogout}>Cancel</button>
-              <button className="btn btn-error" onClick={confirmLogout}>Log Out</button>
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-sm overflow-hidden animate-[fadeIn_0.15s_ease-out]">
+
+            {/* Danger header strip */}
+            <div className="bg-gradient-to-r from-rose-600 to-red-600 px-6 py-5 flex items-center gap-4">
+              <div className="w-12 h-12 rounded-2xl bg-white/15 flex items-center justify-center flex-shrink-0">
+                <FaSignOutAlt className="text-white text-xl" />
+              </div>
+              <div>
+                <h3 className="text-white font-extrabold text-base">Sign Out</h3>
+                <p className="text-rose-100 text-[11px] font-medium">You are about to end your session.</p>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-6">
+              <p className="text-sm text-slate-600 font-medium leading-relaxed">
+                Are you sure you want to log out? Your session will be terminated and you will
+                need to sign in again to access the dashboard.
+              </p>
+
+              {/* Warning note */}
+              <div className="mt-4 flex items-start gap-2.5 bg-rose-50 border border-rose-100 rounded-xl p-3.5">
+                <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4 text-rose-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+                </svg>
+                <p className="text-[11px] text-rose-700 font-semibold leading-relaxed">
+                  Any unsaved changes will be lost. Your NFC card access remains active.
+                </p>
+              </div>
+            </div>
+
+            {/* Action buttons */}
+            <div className="px-6 pb-6 flex gap-3">
+              <button
+                onClick={cancelLogout}
+                className="flex-1 py-3 px-4 rounded-xl font-bold text-slate-600 bg-slate-100 hover:bg-slate-200 transition-colors text-sm"
+              >
+                Stay Signed In
+              </button>
+              <button
+                onClick={confirmLogout}
+                className="flex-1 py-3 px-4 rounded-xl font-extrabold text-white bg-rose-600 hover:bg-rose-700 transition-colors text-sm shadow-md shadow-rose-600/25 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2"
+              >
+                Yes, Log Out
+              </button>
             </div>
           </div>
-        </dialog>
+        </div>
       )}
     </div>
   );

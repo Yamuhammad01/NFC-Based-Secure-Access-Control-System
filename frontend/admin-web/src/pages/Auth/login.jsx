@@ -69,9 +69,9 @@ export default function LoginForm() {
       <div className="w-full max-w-md">
         <div className="bg-white rounded-2xl shadow-xl p-6 sm:p-8">
           <header className="text-center mb-6">
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold text-indigo-800 flex items-center justify-center gap-2">
+            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-indigo-800 flex items-center justify-center gap-2">
               <FaUserCircle className="text-indigo-600" />
-              Nitda Smart Card
+              NFC Access Control
             </h1>
             <p className="text-gray-500 text-xs sm:text-sm mt-2">
               Welcome back! Please login to your account.

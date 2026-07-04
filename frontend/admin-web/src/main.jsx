@@ -12,7 +12,7 @@ import EmployeeTable from './pages/dashboard/admin/employees'
 import Adminprofile from './pages/dashboard/admin/adminprofile'
 import AuditLogs from './pages/dashboard/admin/auditLogs'
 import CardManagement from './pages/dashboard/admin/cards'
-import BusinessCard from './pages/dashboard/staff/BusinessCard'
+//import BusinessCard from './pages/dashboard/staff/BusinessCard'
 import StaffId from './pages/dashboard/staff/staffId'
 import StaffProfile from './pages/dashboard/staff/Profile'
 import StaffPermissions from './pages/dashboard/staff/permissions'
@@ -67,7 +67,6 @@ createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />
         <Route path="/dashboard/staff" element={<Navigate to="/dashboard/staff/profile" replace />} />
         <Route path="/dashboard/staff/profile" element={<StaffProfile />} />
-        <Route path="/dashboard/staff/BusinessCard" element={<BusinessCard />} />
         <Route path="/dashboard/staff/staffId" element={<StaffId />} />
         <Route path="/dashboard/staff/settings" element={<Settings />} />
         <Route path="/dashboard/staff/permissions" element={<StaffPermissions />} />

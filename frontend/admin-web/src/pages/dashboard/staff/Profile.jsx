@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import DashboardLayout from "../../../component/DashboardLayout";
 import NfcCardWidget from "../../../component/NfcCardWidget";
+import SecurityStatusWidget from "../../../component/SecurityStatusWidget";
 import ReportCardModal from "../../../component/ReportCardModal";
 import { QRCodeCanvas } from "qrcode.react";
 import { 
@@ -241,18 +242,22 @@ const StaffProfile = () => {
         {/* MIDDLE SECTION - CREDENTIAL SPECIFICATIONS & PRIVILEGES */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           
-          {/* Reusable NFC Card Information Widget */}
-          <NfcCardWidget 
-            uid={profile.uid}
-            status={profile.status}
-            issuedDate="12 Jan 2026"
-            expiryDate="12 Jan 2030"
-            accessLevel={profile.accessLevel}
-          />
+          {/* Left Column (Widgets) */}
+          <div className="lg:col-span-1">
+            <NfcCardWidget 
+              uid={profile.uid}
+              status={profile.status}
+              issuedDate="12 Jan 2026"
+              expiryDate="12 Jan 2030"
+              accessLevel={profile.accessLevel}
+            />
+          </div>
 
-          {/* Card 2: Interactive Access Matrix */}
-          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 lg:col-span-2">
-            <div className="flex justify-between items-center mb-6">
+          {/* Right Column: Access Matrix + Security Status */}
+          <div className="flex flex-col gap-6 lg:col-span-2">
+            {/* Card 2: Interactive Access Matrix */}
+            <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 h-fit">
+            <div className="flex justify-between items-center mb-5">
               <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
                 <FaShieldAlt className="text-indigo-600" />
                 Administrative Access Clearance Matrix
@@ -268,7 +273,7 @@ const StaffProfile = () => {
                 return (
                   <div 
                     key={idx} 
-                    className={`p-4 rounded-xl border transition-all ${
+                    className={`p-3.5 rounded-xl border transition-all ${
                       hasAccess 
                         ? "bg-emerald-50/50 border-emerald-100 hover:bg-emerald-50" 
                         : "bg-rose-50/30 border-rose-100/50 grayscale opacity-80"
@@ -298,6 +303,18 @@ const StaffProfile = () => {
               })}
             </div>
           </div>
+            
+          {/* Security Status Widget */}
+          <SecurityStatusWidget 
+            status={profile.status}
+            lastAccess={
+              logs.length > 0 
+                ? new Date(logs[0].timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) 
+                : "N/A"
+            }
+            failedAttempts={logs.filter(l => l.result === "denied" || l.result === "failure").length}
+          />
+        </div>
 
         </div>
 

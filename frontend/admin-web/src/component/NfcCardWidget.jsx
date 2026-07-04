@@ -66,10 +66,10 @@ const NfcCardWidget = ({
   const statusConfig = getStatusConfig(status);
 
   return (
-    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6 flex flex-col justify-between h-full">
+    <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 flex flex-col justify-between h-full">
       <div>
         {/* Header */}
-        <div className="flex justify-between items-center mb-6">
+        <div className="flex justify-between items-center mb-5">
           <h3 className="text-lg font-bold text-slate-800 flex items-center gap-2">
             <FaShieldAlt className="text-indigo-600" />
             Smart NFC Access Card
@@ -81,7 +81,7 @@ const NfcCardWidget = ({
         </div>
 
         {/* 3D GLASSMORPHIC PLASTIC UNIVERSITY BADGE */}
-        <div className={`relative overflow-hidden aspect-[1.586/1] w-full rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-indigo-950 p-6 text-white shadow-lg border border-slate-800 transition-all duration-300 hover:shadow-xl group ring-1 ${statusConfig.cardIndicator}`}>
+        <div className={`relative overflow-hidden aspect-[1.586/1] w-full rounded-2xl bg-gradient-to-br from-slate-900 via-slate-850 to-indigo-950 p-5 text-white shadow-lg border border-slate-800 transition-all duration-300 hover:shadow-xl group ring-1 ${statusConfig.cardIndicator}`}>
           
           {/* Decorative Card Circuit Lines Overlay */}
           <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-white/5 via-transparent to-transparent pointer-events-none"></div>

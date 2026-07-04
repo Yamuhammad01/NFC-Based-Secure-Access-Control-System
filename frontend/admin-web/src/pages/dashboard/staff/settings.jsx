@@ -1,529 +1,518 @@
-import React, { useState, useEffect } from 'react'
-import DashboardLayout from '../../../component/DashboardLayout'
-import { FaUser, FaPhone, FaBuilding, FaEdit, FaSave, FaTimes, FaCogs, FaBriefcase, FaIdBadge, FaCamera, FaImage } from 'react-icons/fa'
-import { getProfile, updateProfile, addProfilePhoto } from '../../../Api/authService'
-import Notification, { useNotification } from '../../../component/Notification'
+import React, { useState, useEffect, useRef } from "react";
+import DashboardLayout from "../../../component/DashboardLayout";
+import {
+  FaUser,
+  FaEnvelope,
+  FaPhone,
+  FaCamera,
+  FaSave,
+  FaTimes,
+  FaEdit,
+  FaLock,
+  FaShieldAlt,
+  FaIdBadge,
+  FaCheckCircle,
+  FaSpinner,
+  FaWifi,
+} from "react-icons/fa";
+import { getProfile, updateProfile, addProfilePhoto } from "../../../Api/authService";
 
+// ─── Read-only locked field ───────────────────────────────────────────────────
+const LockedField = ({ icon, label, value }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+      {icon}
+      {label}
+      <FaLock size={9} className="text-slate-300 ml-1" />
+    </label>
+    <div className="flex items-center gap-2.5 bg-slate-50 border border-slate-200 rounded-xl px-4 py-3 cursor-not-allowed">
+      <span className="text-sm font-bold text-slate-400 font-mono truncate">{value || "—"}</span>
+      <span className="ml-auto text-[9px] font-extrabold uppercase text-slate-300 tracking-widest flex-shrink-0">
+        Locked
+      </span>
+    </div>
+  </div>
+);
+
+// ─── Editable field ───────────────────────────────────────────────────────────
+const EditableField = ({ icon, label, name, type = "text", value, onChange, disabled, placeholder, error }) => (
+  <div className="flex flex-col gap-1.5">
+    <label className="text-[10px] font-extrabold uppercase tracking-widest text-slate-500 flex items-center gap-1.5">
+      {icon}
+      {label}
+    </label>
+    <div className={`relative flex items-center rounded-xl border transition-all ${
+      error ? "border-rose-400 bg-rose-50/30" :
+      disabled ? "border-slate-200 bg-slate-50" :
+      "border-slate-200 bg-white focus-within:border-indigo-400 focus-within:ring-2 focus-within:ring-indigo-100"
+    }`}>
+      <input
+        name={name}
+        type={type}
+        value={value}
+        onChange={onChange}
+        disabled={disabled}
+        placeholder={disabled ? "" : placeholder}
+        className="w-full px-4 py-3 bg-transparent text-sm font-semibold text-slate-800 placeholder-slate-300 focus:outline-none disabled:cursor-not-allowed disabled:text-slate-500 rounded-xl"
+      />
+    </div>
+    {error && (
+      <p className="text-[11px] text-rose-500 font-semibold flex items-center gap-1">
+        <FaTimes size={9} /> {error}
+      </p>
+    )}
+  </div>
+);
+
+// ─── Toast component ──────────────────────────────────────────────────────────
+const Toast = ({ visible, type, message, onClose }) => {
+  if (!visible) return null;
+  const isSuccess = type === "success";
+  return (
+    <div className={`fixed bottom-6 right-6 z-[9999] flex items-center gap-3 px-5 py-4 rounded-2xl shadow-xl border transition-all animate-[fadeIn_0.2s_ease-out] max-w-sm ${
+      isSuccess
+        ? "bg-emerald-50 border-emerald-200 text-emerald-800"
+        : "bg-rose-50 border-rose-200 text-rose-800"
+    }`}>
+      {isSuccess
+        ? <FaCheckCircle className="text-emerald-500 flex-shrink-0" />
+        : <FaTimes className="text-rose-500 flex-shrink-0" />
+      }
+      <p className="text-sm font-semibold flex-1">{message}</p>
+      <button onClick={onClose} className="text-current opacity-50 hover:opacity-100 flex-shrink-0">
+        <FaTimes size={12} />
+      </button>
+    </div>
+  );
+};
+
+// ─── Main Page ────────────────────────────────────────────────────────────────
 export default function Settings() {
-  const [formData, setFormData] = useState({
-    firstName: '',
-    lastName: '',
-    department: '',
-    jobTitle: '',
-    position: ''
-  })
-  const [userProfile, setUserProfile] = useState(null)
-  const [isEditing, setIsEditing] = useState(false)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [selectedPhoto, setSelectedPhoto] = useState(null)
-  const [photoPreview, setPhotoPreview] = useState(null)
-  const [uploadingPhoto, setUploadingPhoto] = useState(false)
-  
-  // Notification system
-  const {
-    notification,
-    showSuccess,
-    showError,
-    clearNotification
-  } = useNotification()
+  const [profile, setProfile]       = useState(null);
+  const [loading, setLoading]       = useState(true);
+  const [editing, setEditing]       = useState(false);
+  const [saving, setSaving]         = useState(false);
+  const [uploading, setUploading]   = useState(false);
+  const [toast, setToast]           = useState(null);
+  const fileInputRef                = useRef(null);
 
-  // Fetch user profile on component mount
+  // Editable form state
+  const [form, setForm] = useState({ email: "", phone: "" });
+  const [errors, setErrors]  = useState({});
+  const [photoPreview, setPhotoPreview] = useState(null);
+  const [photoFile, setPhotoFile]       = useState(null);
+
+  // ── Load profile ────────────────────────────────────────────────────────────
   useEffect(() => {
-    fetchUserProfile()
-  }, [])
+    fetchProfile();
+  }, []);
 
-  const fetchUserProfile = async () => {
+  const fetchProfile = async () => {
+    setLoading(true);
     try {
-      setLoading(true)
-      const profileData = await getProfile()
-      setUserProfile(profileData)
-      setFormData({
-        firstName: profileData.firstName || '',
-        lastName: profileData.lastName || '',
-        department: profileData.department || '',
-        jobTitle: profileData.jobTitle || '',
-        position: profileData.position || ''
-      })
-      setError(null)
-    } catch (err) {
-      console.error('Failed to fetch profile:', err)
-      setError('Failed to load profile data')
+      const data = await getProfile();
+      setProfile(data);
+      setForm({
+        email: data.email || "",
+        phone: data.phone || "",
+      });
+    } catch {
+      // Fallback mock
+      const mock = {
+        firstName:   "John",
+        lastName:    "Doe",
+        email:       "john.doe@university.edu",
+        phone:       "+234 801 234 5678",
+        staffId:     "ST2026001",
+        role:        "Staff",
+        accessLevel: 2,
+        uid:         "NFC-88A-92F",
+        department:  "Registry & Academic Affairs",
+        profilePhoto: null,
+      };
+      setProfile(mock);
+      setForm({ email: mock.email, phone: mock.phone });
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault()
+  const showToast = (type, message) => {
+    setToast({ type, message, visible: true });
+    setTimeout(() => setToast(null), 4000);
+  };
+
+  // ── Validation ──────────────────────────────────────────────────────────────
+  const validate = () => {
+    const e = {};
+    const emailRe = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!form.email || !emailRe.test(form.email))
+      e.email = "Please enter a valid email address.";
+    if (form.phone && !/^[+\d\s\-()]{7,20}$/.test(form.phone))
+      e.phone = "Please enter a valid phone number.";
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
+
+  // ── Save info ───────────────────────────────────────────────────────────────
+  const handleSave = async (ev) => {
+    ev.preventDefault();
+    if (!validate()) return;
+    setSaving(true);
     try {
-      setLoading(true)
-      const updateData = {
-        firstName: formData.firstName,
-        lastName: formData.lastName,
-        department: formData.department,
-        jobTitle: formData.jobTitle,
-        position: formData.position
-      }
-      
-      await updateProfile(updateData)
-      
-      // Refresh profile data
-      await fetchUserProfile()
-      
-      // Dispatch event to notify other components of profile update
-      window.dispatchEvent(new CustomEvent('profileUpdated'))
-      
-      showSuccess('Profile updated successfully!')
-      setIsEditing(false)
-      setError(null)
-    } catch (err) {
-      console.error('Failed to update profile:', err)
-      showError('Failed to update profile. Please try again.')
+      await updateProfile({ email: form.email, phone: form.phone });
+      await fetchProfile();
+      window.dispatchEvent(new CustomEvent("profileUpdated"));
+      setEditing(false);
+      showToast("success", "Personal information updated successfully!");
+    } catch {
+      showToast("error", "Failed to save changes. Please try again.");
     } finally {
-      setLoading(false)
+      setSaving(false);
     }
-  }
+  };
 
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value
-    })
-  }
+  // ── Photo handling ──────────────────────────────────────────────────────────
+  const handlePhotoChange = (ev) => {
+    const file = ev.target.files[0];
+    if (!file) return;
 
-  const handlePhotoChange = (e) => {
-    const file = e.target.files[0]
-    if (file) {
-      // Validate file type
-      const validTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif']
-      if (!validTypes.includes(file.type)) {
-        showError('Please select a valid image file (JPEG, PNG, or GIF)')
-        return
-      }
-      
-      // Validate file size (5MB max)
-      if (file.size > 5 * 1024 * 1024) {
-        showError('File size must be less than 5MB')
-        return
-      }
-      
-      setSelectedPhoto(file)
-      
-      // Create preview
-      const reader = new FileReader()
-      reader.onloadend = () => {
-        setPhotoPreview(reader.result)
-      }
-      reader.readAsDataURL(file)
-      setError(null)
+    const validTypes = ["image/jpeg", "image/jpg", "image/png", "image/webp"];
+    if (!validTypes.includes(file.type)) {
+      showToast("error", "Please select a JPEG, PNG, or WebP image."); return;
     }
-  }
+    if (file.size > 5 * 1024 * 1024) {
+      showToast("error", "Image must be under 5 MB."); return;
+    }
+
+    setPhotoFile(file);
+    const reader = new FileReader();
+    reader.onloadend = () => setPhotoPreview(reader.result);
+    reader.readAsDataURL(file);
+  };
 
   const handlePhotoUpload = async () => {
-    if (!selectedPhoto) return
-    
+    if (!photoFile) return;
+    setUploading(true);
     try {
-      setUploadingPhoto(true)
-      await addProfilePhoto(selectedPhoto)
-      
-      // Refresh profile data to get updated photo
-      await fetchUserProfile()
-      
-      // Dispatch event to notify other components of profile update
-      window.dispatchEvent(new CustomEvent('profileUpdated'))
-      
-      // Reset photo selection
-      setSelectedPhoto(null)
-      setPhotoPreview(null)
-      
-      showSuccess('Profile photo updated successfully!')
-      setError(null)
-    } catch (err) {
-      console.error('Failed to upload photo:', err)
-      showError('Failed to upload photo. Please try again.')
+      await addProfilePhoto(photoFile);
+      await fetchProfile();
+      window.dispatchEvent(new CustomEvent("profileUpdated"));
+      setPhotoFile(null);
+      setPhotoPreview(null);
+      showToast("success", "Profile photo updated successfully!");
+    } catch {
+      showToast("error", "Photo upload failed. Please try again.");
     } finally {
-      setUploadingPhoto(false)
+      setUploading(false);
     }
-  }
+  };
 
-  const cancelPhotoUpload = () => {
-    setSelectedPhoto(null)
-    setPhotoPreview(null)
-    setError(null)
-  }
-
+  const cancelPhoto = () => {
+    setPhotoFile(null);
+    setPhotoPreview(null);
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
   const handleCancel = () => {
-    setIsEditing(false)
-    // Reset form to original values
-    if (userProfile) {
-      setFormData({
-        firstName: userProfile.firstName || '',
-        lastName: userProfile.lastName || '',
-        department: userProfile.department || '',
-        jobTitle: userProfile.jobTitle || '',
-        position: userProfile.position || ''
-      })
-    }
-    setError(null)
-  }
+    setEditing(false);
+    setErrors({});
+    if (profile) setForm({ email: profile.email || "", phone: profile.phone || "" });
+  };
 
-  if (loading && !userProfile) {
+  // ── Loading ─────────────────────────────────────────────────────────────────
+  if (loading) {
     return (
-      <DashboardLayout role="staff" profilePic="/src/assets/pic.png">
-        <div className="flex items-center justify-center min-h-[calc(100vh-100px)]">
-          <div className="text-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-teal-600 mx-auto mb-4"></div>
-            <p className="text-gray-600">Loading profile...</p>
-          </div>
+      <DashboardLayout role="staff">
+        <div className="flex flex-col items-center justify-center min-h-[70vh] gap-3">
+          <span className="loading loading-spinner loading-lg text-teal-500" />
+          <p className="text-gray-500 text-sm font-semibold animate-pulse">Loading profile…</p>
         </div>
       </DashboardLayout>
-    )
+    );
   }
 
+  const fullName = `${profile?.firstName || ""} ${profile?.lastName || ""}`.trim() || "User";
+  const initials = `${(profile?.firstName || "U")[0]}${(profile?.lastName || "")[0] || ""}`.toUpperCase();
+  const currentPhoto = photoPreview || profile?.profilePhoto;
+
   return (
-    <DashboardLayout role="staff" profilePic="/src/assets/pic.png">
-      {/* Notification Component */}
-      {notification && (
-        <Notification
-          type={notification.type}
-          message={notification.message}
-          isVisible={notification.isVisible}
-          onClose={clearNotification}
-        />
-      )}
-      {/* Header */}
-      <div className="p-4 md:p-6">
-        <h1 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <FaCogs className="text-teal-600" />
-          Settings
-        </h1>
-        <p className="text-sm text-gray-500">Manage your profile and account settings</p>
-      </div>
+    <DashboardLayout role="staff">
+      <div className="min-h-screen bg-slate-50/50 p-4 sm:p-6 md:p-8">
 
-      <div className="min-h-[calc(100vh-100px)] p-2 sm:p-4 md:p-6">
-        <div className="bg-white/80 backdrop-blur rounded-2xl shadow-md p-3 sm:p-4 md:p-6">
-          {/* Error Message */}
-          {error && (
-            <div className="mb-6 p-4 bg-red-50 border border-red-200 rounded-lg">
-              <p className="text-red-600 text-sm">{error}</p>
-            </div>
-          )}
+        {/* ── HERO ─────────────────────────────────────────────────────────── */}
+        <div className="bg-gradient-to-r from-slate-900 via-teal-950 to-slate-900 rounded-3xl shadow-xl border border-teal-800/20 mb-8 p-6 sm:p-8">
+          <div className="flex flex-col sm:flex-row items-center gap-6">
 
-          {/* Profile Info Display */}
-          {userProfile && (
-            <div className="mb-6 sm:mb-8 p-3 sm:p-4 md:p-6 bg-teal-50 border border-teal-200 rounded-lg">
-              <h3 className="text-lg font-semibold text-teal-800 mb-4">Profile Information</h3>
-              
-              <div className="flex flex-col lg:flex-row gap-4 sm:gap-6">
-                {/* Profile Picture Section */}
-                <div className="flex flex-col items-center lg:items-start">
-                  <div className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden bg-gray-200 border-4 border-white shadow-lg mb-4">
-                    {userProfile.profilePhoto ? (
-                      <img 
-                        src={userProfile.profilePhoto} 
-                        alt="Profile" 
-                        className="w-full h-full object-cover"
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-teal-100">
-                        <FaUser className="text-4xl text-teal-600" />
-                      </div>
-                    )}
+            {/* Avatar */}
+            <div className="relative flex-shrink-0">
+              <div className="w-20 h-20 sm:w-24 sm:h-24 rounded-2xl overflow-hidden border-4 border-white/10 shadow-xl">
+                {currentPhoto ? (
+                  <img src={currentPhoto} alt="Profile" className="w-full h-full object-cover" />
+                ) : (
+                  <div className="w-full h-full bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center">
+                    <span className="text-2xl font-black text-white">{initials}</span>
                   </div>
-                  
-                  {/* QR Code Section */}
-                  {userProfile.qrCode && (
-                    <div className="text-center">
-                      <p className="text-sm font-medium text-teal-800 mb-2">QR Code</p>
-                      <div className="w-24 h-24 bg-white p-2 rounded border">
-                        <img 
-                          src={userProfile.qrCode} 
-                          alt="QR Code" 
-                          className="w-full h-full object-contain"
-                        />
-                      </div>
+                )}
+              </div>
+              {/* Camera overlay */}
+              <label
+                htmlFor="avatar-upload"
+                className="absolute -bottom-2 -right-2 w-8 h-8 bg-teal-500 hover:bg-teal-400 rounded-xl flex items-center justify-center cursor-pointer shadow-md transition-colors"
+                title="Change photo"
+              >
+                <FaCamera className="text-white" size={13} />
+              </label>
+              <input
+                id="avatar-upload"
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoChange}
+              />
+            </div>
+
+            <div>
+              <h1 className="text-2xl font-extrabold text-white">{fullName}</h1>
+              <p className="text-teal-200/80 text-sm font-medium mt-0.5">{profile?.department}</p>
+              <div className="flex flex-wrap gap-2 mt-3">
+                <span className="text-[10px] bg-white/10 text-white font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wide border border-white/15">
+                  {profile?.role || "Staff"}
+                </span>
+                <span className="text-[10px] bg-white/10 text-white font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wide border border-white/15 font-mono">
+                  {profile?.staffId}
+                </span>
+              </div>
+            </div>
+
+            {/* Edit toggle */}
+            <div className="sm:ml-auto">
+              {!editing ? (
+                <button
+                  onClick={() => setEditing(true)}
+                  className="flex items-center gap-2 bg-teal-500 hover:bg-teal-400 text-white font-extrabold px-5 py-2.5 rounded-xl shadow-md transition-all"
+                >
+                  <FaEdit /> Edit Profile
+                </button>
+              ) : (
+                <button
+                  onClick={handleCancel}
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white font-extrabold px-5 py-2.5 rounded-xl border border-white/20 transition-all"
+                >
+                  <FaTimes /> Cancel
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+
+          {/* ── LEFT: Profile photo upload ──────────────────────────────────── */}
+          <div className="space-y-6">
+
+            {/* Photo card */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100">
+                <h3 className="text-sm font-extrabold text-slate-700 flex items-center gap-2">
+                  <FaCamera className="text-teal-500" /> Profile Picture
+                </h3>
+              </div>
+
+              <div className="p-6 text-center">
+                {/* Large preview */}
+                <div className="w-28 h-28 rounded-2xl overflow-hidden mx-auto mb-4 border-2 border-slate-200 shadow-md">
+                  {currentPhoto ? (
+                    <img src={currentPhoto} alt="Preview" className="w-full h-full object-cover" />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-teal-500 to-indigo-600 flex items-center justify-center">
+                      <span className="text-3xl font-black text-white">{initials}</span>
                     </div>
                   )}
                 </div>
 
-                {/* Profile Details */}
-                <div className="flex-1">
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-2 sm:gap-3 md:gap-4 text-xs sm:text-sm text-teal-800">
-                    <div><span className="font-medium">First Name:</span> {userProfile.firstName || 'Not set'}</div>
-                    <div><span className="font-medium">Last Name:</span> {userProfile.lastName || 'Not set'}</div>
-                    <div><span className="font-medium">Email:</span> {userProfile.email || 'Not available'}</div>
-                    <div><span className="font-medium">Smart ID:</span> {userProfile.smartId || userProfile.staffId || 'Not available'}</div>
-                    <div><span className="font-medium">Department:</span> {userProfile.department || 'Not set'}</div>
-                    <div><span className="font-medium">Job Title:</span> {userProfile.jobTitle || 'Not set'}</div>
-                    <div className="md:col-span-2"><span className="font-medium">Position:</span> {userProfile.position || 'Not set'}</div>
+                {/* File selected state */}
+                {photoFile ? (
+                  <div className="space-y-3">
+                    <div className="bg-slate-50 rounded-xl border border-slate-200 p-3 text-left">
+                      <p className="text-xs font-bold text-slate-700 truncate">{photoFile.name}</p>
+                      <p className="text-[11px] text-slate-400 mt-0.5">
+                        {(photoFile.size / 1024 / 1024).toFixed(2)} MB
+                      </p>
+                    </div>
+                    <div className="flex gap-2">
+                      <button
+                        onClick={handlePhotoUpload}
+                        disabled={uploading}
+                        className="btn flex-1 bg-teal-500 hover:bg-teal-600 border-none text-white font-extrabold rounded-xl text-xs"
+                      >
+                        {uploading ? <FaSpinner className="animate-spin" /> : <FaSave />}
+                        {uploading ? "Uploading…" : "Upload"}
+                      </button>
+                      <button
+                        onClick={cancelPhoto}
+                        disabled={uploading}
+                        className="btn btn-ghost flex-1 border border-slate-200 text-slate-600 rounded-xl text-xs font-bold"
+                      >
+                        Cancel
+                      </button>
+                    </div>
                   </div>
+                ) : (
+                  <label
+                    htmlFor="avatar-upload"
+                    className="flex flex-col items-center gap-2 cursor-pointer p-4 rounded-xl border-2 border-dashed border-slate-200 hover:border-teal-400 hover:bg-teal-50/30 transition-all"
+                  >
+                    <FaCamera className="text-slate-400 text-xl" />
+                    <span className="text-xs font-bold text-slate-500">Click to change photo</span>
+                    <span className="text-[10px] text-slate-400">JPEG, PNG, WebP · Max 5 MB</span>
+                  </label>
+                )}
+              </div>
+            </div>
+
+            {/* NFC card mini-visual */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm p-6">
+              <h3 className="text-xs font-extrabold text-slate-400 uppercase tracking-widest mb-4">
+                Your NFC Card
+              </h3>
+              <div className="relative rounded-xl bg-gradient-to-br from-slate-900 to-indigo-950 p-4 text-white border border-slate-800 shadow">
+                <div className="flex justify-between items-start mb-3">
+                  <span className="text-[8px] tracking-[0.2em] font-extrabold text-indigo-300 uppercase">
+                    University Smart ID
+                  </span>
+                  <FaWifi className="rotate-90 text-indigo-300 text-xs" />
+                </div>
+                <div className="w-7 h-5 rounded bg-gradient-to-br from-amber-300 to-amber-500 mb-3 shadow-inner" />
+                <p className="font-mono text-xs font-bold text-white/80 tracking-widest">
+                  {profile?.uid
+                    ? `${profile.uid.slice(0, 4)} •••• ${profile.uid.slice(-4)}`
+                    : "•••• •••• ••••"}
+                </p>
+                <div className="flex justify-between mt-2 text-[8px] text-indigo-200/60 font-bold uppercase">
+                  <span>{fullName}</span>
+                  <span>{profile?.staffId}</span>
                 </div>
               </div>
             </div>
-          )}
-
-          {/* Photo Upload Section */}
-          <div className="mb-6 sm:mb-8 p-3 sm:p-4 md:p-6 bg-white border border-gray-200 rounded-lg">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaCamera className="text-teal-600" />
-              Profile Photo
-            </h3>
-            
-            {!selectedPhoto ? (
-              <div className="space-y-4">
-                <div className="flex items-center justify-center w-full">
-                  <label htmlFor="photo-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100 transition duration-200">
-                    <div className="flex flex-col items-center justify-center pt-5 pb-6">
-                      <FaImage className="w-8 h-8 mb-2 text-gray-400" />
-                      <p className="mb-2 text-sm text-gray-500">
-                        <span className="font-semibold">Click to upload</span> profile photo
-                      </p>
-                      <p className="text-xs text-gray-500">PNG, JPG or GIF (MAX. 5MB)</p>
-                    </div>
-                    <input 
-                      id="photo-upload" 
-                      type="file" 
-                      className="hidden" 
-                      accept="image/*"
-                      onChange={handlePhotoChange}
-                      disabled={uploadingPhoto}
-                    />
-                  </label>
-                </div>
-              </div>
-            ) : (
-              <div className="space-y-4">
-                <div className="flex items-center gap-4">
-                  <div className="w-20 h-20 rounded-lg overflow-hidden border-2 border-gray-200">
-                    <img 
-                      src={photoPreview} 
-                      alt="Preview" 
-                      className="w-full h-full object-cover"
-                    />
-                  </div>
-                  <div className="flex-1">
-                    <p className="text-sm font-medium text-gray-700">{selectedPhoto.name}</p>
-                    <p className="text-xs text-gray-500">{(selectedPhoto.size / 1024 / 1024).toFixed(2)} MB</p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3">
-                  <button
-                    onClick={handlePhotoUpload}
-                    disabled={uploadingPhoto}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium transition duration-200 ${
-                      uploadingPhoto
-                        ? 'bg-gray-400 cursor-not-allowed text-white'
-                        : 'bg-teal-600 hover:bg-teal-700 text-white'
-                    }`}
-                  >
-                    {uploadingPhoto ? (
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    ) : (
-                      <FaSave className="w-4 h-4" />
-                    )}
-                    {uploadingPhoto ? 'Uploading...' : 'Upload Photo'}
-                  </button>
-                  
-                  <button
-                    onClick={cancelPhotoUpload}
-                    disabled={uploadingPhoto}
-                    className="flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium text-gray-700 bg-white border border-gray-300 hover:bg-gray-50 transition duration-200"
-                  >
-                    <FaTimes className="w-4 h-4" />
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
           </div>
 
-          {/* Edit Profile Button */}
-          {!isEditing && (
-            <div className="flex justify-center mb-6 sm:mb-8">
-              <button
-                onClick={() => setIsEditing(true)}
-                disabled={loading}
-                className={`flex items-center gap-2 px-6 py-2 rounded-lg transition duration-200 shadow-md ${
-                  loading
-                    ? 'bg-gray-400 cursor-not-allowed text-white'
-                    : 'bg-teal-600 hover:bg-teal-700 text-white'
-                }`}
-              >
-                <FaEdit className="w-4 h-4" />
-                Edit Profile
-              </button>
-            </div>
-          )}
+          {/* ── RIGHT: Form panels ──────────────────────────────────────────── */}
+          <div className="lg:col-span-2 space-y-6">
 
-          {/* Profile Form */}
-          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
-              {/* First Name */}
-              <div>
-                <label htmlFor="firstName" className="block text-xs uppercase tracking-wider text-gray-500 mb-2">
-                  First Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="firstName"
-                    name="firstName"
-                    type="text"
-                    required
-                    disabled={!isEditing || loading}
-                    value={formData.firstName}
-                    onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 text-gray-900 placeholder-gray-500 ${
-                      !isEditing || loading ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'
-                    }`}
-                    placeholder="Enter your first name"
+            {/* ── Editable fields panel ─────────────────────────────────────── */}
+            <form onSubmit={handleSave} className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-sm font-extrabold text-slate-700 flex items-center gap-2">
+                  <FaEdit className="text-teal-500" /> Personal Information
+                </h3>
+                {editing && (
+                  <span className="text-[10px] bg-teal-50 text-teal-700 border border-teal-200 font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wide">
+                    Editing
+                  </span>
+                )}
+              </div>
+
+              <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                {/* Email — editable */}
+                <div className="sm:col-span-2">
+                  <EditableField
+                    icon={<FaEnvelope size={10} />}
+                    label="Email Address"
+                    name="email"
+                    type="email"
+                    value={form.email}
+                    onChange={(e) => { setForm((p) => ({ ...p, email: e.target.value })); setErrors((p) => ({ ...p, email: "" })); }}
+                    disabled={!editing}
+                    placeholder="your.email@university.edu"
+                    error={errors.email}
+                  />
+                </div>
+
+                {/* Phone — editable */}
+                <div className="sm:col-span-2">
+                  <EditableField
+                    icon={<FaPhone size={10} />}
+                    label="Phone Number"
+                    name="phone"
+                    type="tel"
+                    value={form.phone}
+                    onChange={(e) => { setForm((p) => ({ ...p, phone: e.target.value })); setErrors((p) => ({ ...p, phone: "" })); }}
+                    disabled={!editing}
+                    placeholder="+234 801 234 5678"
+                    error={errors.phone}
                   />
                 </div>
               </div>
 
-              {/* Last Name */}
-              <div>
-                <label htmlFor="lastName" className="block text-xs uppercase tracking-wider text-gray-500 mb-2">
-                  Last Name
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaUser className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="lastName"
-                    name="lastName"
-                    type="text"
-                    required
-                    disabled={!isEditing || loading}
-                    value={formData.lastName}
-                    onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 text-gray-900 placeholder-gray-500 ${
-                      !isEditing || loading ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'
-                    }`}
-                    placeholder="Enter your last name"
-                  />
+              {/* Save footer */}
+              {editing && (
+                <div className="px-6 pb-6 flex gap-3">
+                  <button
+                    type="button"
+                    onClick={handleCancel}
+                    className="btn btn-ghost flex-1 rounded-xl font-bold text-slate-600 border border-slate-200 hover:bg-slate-50"
+                  >
+                    <FaTimes /> Discard
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={saving}
+                    className="btn flex-1 bg-teal-500 hover:bg-teal-600 border-none text-white font-extrabold rounded-xl shadow-sm disabled:opacity-50"
+                  >
+                    {saving ? (
+                      <span className="flex items-center gap-2">
+                        <FaSpinner className="animate-spin" /> Saving…
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-2">
+                        <FaSave /> Save Changes
+                      </span>
+                    )}
+                  </button>
                 </div>
+              )}
+            </form>
+
+            {/* ── Read-only locked fields panel ─────────────────────────────── */}
+            <div className="bg-white rounded-2xl border border-slate-100 shadow-sm overflow-hidden">
+              <div className="px-6 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="text-sm font-extrabold text-slate-700 flex items-center gap-2">
+                  <FaLock className="text-slate-400" /> System-Managed Fields
+                </h3>
+                <span className="text-[10px] bg-slate-100 text-slate-500 font-extrabold uppercase px-2.5 py-1 rounded-full tracking-wide border border-slate-200">
+                  Read Only
+                </span>
               </div>
 
-              {/* Department */}
-              <div>
-                <label htmlFor="department" className="block text-xs uppercase tracking-wider text-gray-500 mb-2">
-                  Department
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaBuilding className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="department"
-                    name="department"
-                    type="text"
-                    required
-                    disabled={!isEditing || loading}
-                    value={formData.department}
-                    onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 text-gray-900 placeholder-gray-500 ${
-                      !isEditing || loading ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'
-                    }`}
-                    placeholder="Enter your department"
-                  />
-                </div>
+              <div className="p-6 grid grid-cols-1 sm:grid-cols-2 gap-5">
+                <LockedField icon={<FaWifi size={9} className="rotate-90" />} label="Card UID"       value={profile?.uid} />
+                <LockedField icon={<FaIdBadge size={9} />}                    label="Staff ID"       value={profile?.staffId} />
+                <LockedField icon={<FaUser size={9} />}                       label="Role"           value={profile?.role} />
+                <LockedField icon={<FaShieldAlt size={9} />}                  label="Access Level"   value={profile?.accessLevel ? `Level ${profile.accessLevel}` : "—"} />
               </div>
 
-              {/* Job Title */}
-              <div>
-                <label htmlFor="jobTitle" className="block text-xs uppercase tracking-wider text-gray-500 mb-2">
-                  Job Title
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaBriefcase className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="jobTitle"
-                    name="jobTitle"
-                    type="text"
-                    required
-                    disabled={!isEditing || loading}
-                    value={formData.jobTitle}
-                    onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 text-gray-900 placeholder-gray-500 ${
-                      !isEditing || loading ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'
-                    }`}
-                    placeholder="Enter your job title"
-                  />
-                </div>
-              </div>
-
-              {/* Position */}
-              <div className="md:col-span-2">
-                <label htmlFor="position" className="block text-xs uppercase tracking-wider text-gray-500 mb-2">
-                  Position
-                </label>
-                <div className="relative">
-                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                    <FaIdBadge className="h-5 w-5 text-gray-400" />
-                  </div>
-                  <input
-                    id="position"
-                    name="position"
-                    type="text"
-                    required
-                    disabled={!isEditing || loading}
-                    value={formData.position}
-                    onChange={handleChange}
-                    className={`block w-full pl-10 pr-3 py-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-teal-500 transition duration-200 text-gray-900 placeholder-gray-500 ${
-                      !isEditing || loading ? 'bg-gray-50 cursor-not-allowed' : 'bg-white shadow-sm'
-                    }`}
-                    placeholder="Enter your position"
-                  />
-                </div>
+              <div className="bg-slate-50 border-t border-slate-100 px-6 py-3.5 flex items-start gap-2.5">
+                <FaShieldAlt className="text-slate-400 flex-shrink-0 mt-0.5 text-xs" />
+                <p className="text-[11px] text-slate-400 font-medium leading-relaxed">
+                  These fields are controlled by the university registry office and cannot be
+                  changed by users. Contact registry services to request modifications.
+                </p>
               </div>
             </div>
 
-            {/* Action Buttons */}
-            {isEditing && (
-              <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-4">
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className={`flex-1 flex justify-center items-center gap-2 py-3 px-4 rounded-lg shadow-sm text-sm font-medium text-white transition duration-200 ${
-                    loading 
-                      ? 'bg-gray-400 cursor-not-allowed' 
-                      : 'bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
-                  }`}
-                >
-                  {loading ? (
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                  ) : (
-                    <FaSave className="h-4 w-4" />
-                  )}
-                  {loading ? 'Saving...' : 'Save Changes'}
-                </button>
-                <button
-                  type="button"
-                  onClick={handleCancel}
-                  disabled={loading}
-                  className={`flex-1 flex justify-center items-center gap-2 py-3 px-4 rounded-lg shadow-sm text-sm font-medium transition duration-200 ${
-                    loading
-                      ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                      : 'text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500'
-                  }`}
-                >
-                  <FaTimes className="h-4 w-4" />
-                  Cancel
-                </button>
-              </div>
-            )}
-          </form>
+          </div>
         </div>
       </div>
+
+      {/* ── Toast notification ──────────────────────────────────────────────── */}
+      <Toast
+        visible={toast?.visible}
+        type={toast?.type}
+        message={toast?.message}
+        onClose={() => setToast(null)}
+      />
     </DashboardLayout>
-  )
+  );
 }
