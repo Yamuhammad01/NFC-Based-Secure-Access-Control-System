@@ -1,9 +1,8 @@
 'use client';
 
-import { useEffect, useRef, useState, useCallback } from 'react';
-import jsQR from 'jsqr';
-import { Camera, RefreshCcw, X, AlertCircle } from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useCallback } from 'react';
+import { QrReader } from 'react-qr-reader';
+import { X, AlertCircle, RefreshCcw } from 'lucide-react';
 
 interface QRScannerProps {
   onScan?: (data: string) => void;
@@ -17,67 +16,42 @@ const QRScanner = ({ onScan, onScanSuccess, onCancel, doorName }: QRScannerProps
     if (onScan) onScan(data);
     if (onScanSuccess) onScanSuccess(data);
   }, [onScan, onScanSuccess]);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const canvasRef = useRef<HTMLCanvasElement>(null);
+
   const [error, setError] = useState<string | null>(null);
   const [manualInput, setManualInput] = useState('');
   const [showManual, setShowManual] = useState(false);
-  const requestRef = useRef<number>(null);
+  const [scanning, setScanning] = useState(true);
 
-  const startCamera = useCallback(async () => {
-    try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { facingMode: 'environment' } 
-      });
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.setAttribute('playsinline', 'true');
-        videoRef.current.play();
-        requestRef.current = requestAnimationFrame(tick);
-      }
-    } catch (err) {
-      console.error('Camera error:', err);
-      setError('Camera access denied. Please allow permissions or use manual input.');
-      setShowManual(true);
-    }
+  const handleCameraError = useCallback((err: Error) => {
+    console.error('Camera error:', err);
+    setError('Camera access denied. Please allow permissions or use manual input.');
+    setShowManual(true);
   }, []);
 
-  const tick = useCallback(() => {
-    const video = videoRef.current;
-    const canvas = canvasRef.current;
-
-    if (video && video.readyState === video.HAVE_ENOUGH_DATA && canvas) {
-      const context = canvas.getContext('2d', { willReadFrequently: true });
-      
-      if (context) {
-        canvas.height = video.videoHeight;
-        canvas.width = video.videoWidth;
-        context.drawImage(video, 0, 0, canvas.width, canvas.height);
-        
-        const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
-        const code = jsQR(imageData.data, imageData.width, imageData.height, {
-          inversionAttempts: 'dontInvert',
-        });
-        
-        if (code) {
-          handleScan(code.data);
-          return; // Stop ticking if found
-        }
+  const handleResult = useCallback((result: any, err: any) => {
+    if (err) {
+      // React-qr-reader sends errors for normal operation (no QR detected)
+      // Only surface actual camera errors
+      if (err.name === 'NotAllowedError' || err.name === 'NotFoundError') {
+        handleCameraError(err);
       }
+      return;
     }
-    requestRef.current = requestAnimationFrame(tick);
-  }, [onScan]);
 
-  useEffect(() => {
-    startCamera();
-    return () => {
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-      if (videoRef.current?.srcObject) {
-        const stream = videoRef.current.srcObject as MediaStream;
-        stream.getTracks().forEach(track => track.stop());
-      }
-    };
-  }, [startCamera]);
+    if (!result) return;
+
+    // Extract text from result (react-qr-reader v3+ returns result?.text)
+    const text = result?.text || result?.getText?.();
+
+    if (!text) return;
+    if (!scanning) return;
+
+    // Prevent duplicate scans
+    setScanning(false);
+
+    console.log('QR Scanned:', text);
+    handleScan(text);
+  }, [handleScan, scanning, handleCameraError]);
 
   return (
     <div className="fixed inset-0 z-[100] flex items-center justify-center bg-navy/95 p-4">
@@ -100,15 +74,23 @@ const QRScanner = ({ onScan, onScanSuccess, onCancel, doorName }: QRScannerProps
               <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
               <p className="text-white text-lg font-medium mb-6">{error}</p>
               {!showManual && (
-                <button onClick={startCamera} className="px-6 py-3 bg-primary text-white rounded-xl flex items-center gap-2">
+                <button 
+                  onClick={() => { setError(null); setScanning(true); }} 
+                  className="px-6 py-3 bg-primary text-white rounded-xl flex items-center gap-2"
+                >
                   <RefreshCcw className="w-5 h-5" /> Retry Camera
                 </button>
               )}
             </div>
           ) : (
             <>
-              <video ref={videoRef} className="absolute inset-0 w-full h-full object-cover" />
-              <canvas ref={canvasRef} className="hidden" />
+              {/* QrReader from react-qr-reader handles camera + decoding */}
+              <QrReader
+                constraints={{ facingMode: 'environment' }}
+                onResult={handleResult}
+                containerStyle={{ width: '100%', height: '100%' }}
+                videoStyle={{ objectFit: 'cover' }}
+              />
               
               {/* Scan Overlay */}
               <div className="absolute inset-0 pointer-events-none flex items-center justify-center">
@@ -120,7 +102,7 @@ const QRScanner = ({ onScan, onScanSuccess, onCancel, doorName }: QRScannerProps
                   <div className="absolute bottom-0 right-0 w-10 h-10 border-b-4 border-r-4 border-primary rounded-br-xl" />
                   
                   {/* Scan Line */}
-                  <div className="absolute left-0 right-0 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-scan-line z-10" />
+                  <div className="absolute left-0 right-0 top-1/2 h-1 bg-gradient-to-r from-transparent via-red-500 to-transparent shadow-[0_0_15px_rgba(239,68,68,0.8)] animate-scan-line z-10" />
                   
                   {/* Dimming overlay outside scan area */}
                   <div className="absolute -inset-[2000px] border-[2000px] border-navy/40" />

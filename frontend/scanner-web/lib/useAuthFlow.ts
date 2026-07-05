@@ -38,26 +38,45 @@ export const useAuthFlow = () => {
     setState('verifying');
     
     try {
-      const response = await fetch('/api/verify', {
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:5000';
+      const response = await fetch(`${apiUrl}/api/scan`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          qrData,
-          door: selectedDoor,
-          timestamp: Date.now()
+          value: qrData,
+          door: selectedDoor
         })
       });
       
       const data = await response.json();
       
-      if (data.success) {
-        setResult(data);
+      if (response.ok && data.status === 'granted') {
+        setResult({
+          success: true,
+          userId: data.value,
+          door: selectedDoor || undefined,
+          time: new Date().toLocaleTimeString(),
+          date: new Date().toLocaleDateString('en-GB', { 
+            day: '2-digit', 
+            month: 'long', 
+            year: 'numeric' 
+          }),
+          role: data.role
+        });
         setState('granted');
       } else {
+        setResult({
+          success: false,
+          error: data.message || 'Access denied'
+        });
         setState('denied');
       }
     } catch (error) {
       console.error('Verification failed:', error);
+      setResult({
+        success: false,
+        error: 'Failed to connect to server'
+      });
       setState('denied');
     }
   }, [state, selectedDoor]);
