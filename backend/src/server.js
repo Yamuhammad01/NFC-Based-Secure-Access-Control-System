@@ -11,7 +11,7 @@ const errorHandler = require("./middlewares/errorHandler");
 
 // Route imports
 const authRoutes = require("./routes/authRoutes");
-const userRoutes = require("./routes/userRoutes");
+const nfcCardInfoRoutes = require("./routes/nfcCardInfoRoutes");
 const accessRoutes = require("./routes/accessRoutes");
 const readerRoutes = require("./routes/readerRoutes");
 const adminRoutes = require("./routes/adminRoutes");
@@ -43,7 +43,7 @@ app.use("/api", limiter);
 //  API Routes
 // ──────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
-app.use("/api/users", userRoutes);
+app.use("/api/cards", nfcCardInfoRoutes);      // NFC Card management (replaces /api/users)
 app.use("/api/access", accessRoutes);
 app.use("/api/readers", readerRoutes);
 app.use(["/api/Admin", "/api/api/Admin"], adminRoutes);

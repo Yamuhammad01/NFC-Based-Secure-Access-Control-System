@@ -1,6 +1,7 @@
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
-const Staff = require("../models/Staff");
+const Users = require("../models/Users");
+const AdminAuditLog = require("../models/AdminAuditLog");
 
 // Helper to sign JWT
 const generateToken = (user) => {
@@ -14,27 +15,29 @@ const generateToken = (user) => {
 // POST /api/auth/register
 exports.register = async (req, res) => {
   try {
-    const { email, password, staffId, department } = req.body;
+    const { email, password, staffId, department, firstName, lastName, name } = req.body;
 
     if (!email || !password || !staffId || !department) {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    const existingStaff = await Staff.findOne({
+    const existingUser = await Users.findOne({
       $or: [{ email: email.toLowerCase() }, { staffId }],
     });
 
-    if (existingStaff) {
-      return res.status(400).json({ message: "Staff email or ID already registered" });
+    if (existingUser) {
+      return res.status(400).json({ message: "User email or ID already registered" });
     }
 
     // Auto-detect role: if email includes 'admin', make them Admin, otherwise default Staff
     const role = email.toLowerCase().includes("admin") ? "admin" : "staff";
-    const name = req.body.name || (email.split("@")[0] || "User").split(".").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
+    const fullName = name || firstName || (email.split("@")[0] || "User").split(".").map(s => s.charAt(0).toUpperCase() + s.slice(1)).join(" ");
 
     const hashedPassword = await bcrypt.hash(password, 10);
-    const newStaff = new Staff({
-      name,
+    const newUser = new Users({
+      name: fullName,
+      firstName: firstName || fullName.split(" ")[0] || "",
+      lastName: lastName || fullName.split(" ").slice(1).join(" ") || "",
       email: email.toLowerCase(),
       password: hashedPassword,
       staffId,
@@ -42,18 +45,34 @@ exports.register = async (req, res) => {
       role,
     });
 
-    await newStaff.save();
-    const token = generateToken(newStaff);
+    await newUser.save();
+
+    // Log admin audit if creator is admin
+    if (req.user && req.user.role === "admin") {
+      await AdminAuditLog.create({
+        adminRef: req.user.userId,
+        adminName: req.user.email,
+        action: "create_user",
+        targetType: "user",
+        targetId: newUser._id.toString(),
+        details: { email: newUser.email, staffId: newUser.staffId },
+      });
+    }
+
+    const token = generateToken(newUser);
 
     res.status(201).json({
       access_token: token,
       message: "Registration successful",
       user: {
-        id: newStaff._id,
-        email: newStaff.email,
-        staffId: newStaff.staffId,
-        department: newStaff.department,
-        role: newStaff.role,
+        id: newUser._id,
+        email: newUser.email,
+        staffId: newUser.staffId,
+        department: newUser.department,
+        role: newUser.role,
+        name: newUser.name,
+        firstName: newUser.firstName,
+        lastName: newUser.lastName,
       },
     });
   } catch (error) {
@@ -73,11 +92,13 @@ exports.login = async (req, res) => {
 
     // Automatic seed for default admin login (admin@nfc.com / admin123)
     if (email.toLowerCase() === "admin@nfc.com" && password === "admin123") {
-      let defaultAdmin = await Staff.findOne({ email: "admin@nfc.com" });
+      let defaultAdmin = await Users.findOne({ email: "admin@nfc.com" });
       if (!defaultAdmin) {
         const hashedPassword = await bcrypt.hash("admin123", 10);
-        defaultAdmin = new Staff({
+        defaultAdmin = new Users({
           name: "Admin User",
+          firstName: "Admin",
+          lastName: "User",
           email: "admin@nfc.com",
           password: hashedPassword,
           staffId: "ADMIN001",
@@ -89,27 +110,37 @@ exports.login = async (req, res) => {
       }
     }
 
-    const staff = await Staff.findOne({ email: email.toLowerCase() });
-    if (!staff) {
+    const user = await Users.findOne({ email: email.toLowerCase() });
+    if (!user) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const isMatch = await bcrypt.compare(password, staff.password);
+    const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid email or password" });
     }
 
-    const token = generateToken(staff);
+    const token = generateToken(user);
 
     res.status(200).json({
       access_token: token,
       message: "Login successful",
       user: {
-        id: staff._id,
-        email: staff.email,
-        staffId: staff.staffId,
-        department: staff.department,
-        role: staff.role,
+        id: user._id,
+        email: user.email,
+        staffId: user.staffId,
+        department: user.department,
+        role: user.role,
+        name: user.name,
+        firstName: user.firstName,
+        lastName: user.lastName,
+        profilePhoto: user.profilePhoto,
+        phone: user.phone,
+        uid: user.uid,
+        accessLevel: user.accessLevel,
+        jobTitle: user.jobTitle,
+        position: user.position,
+        status: user.status,
       },
     });
   } catch (error) {
@@ -121,11 +152,11 @@ exports.login = async (req, res) => {
 // GET /api/auth/me
 exports.getMe = async (req, res) => {
   try {
-    const staff = await Staff.findById(req.user.userId).select("-password");
-    if (!staff) {
+    const user = await Users.findById(req.user.userId).select("-password");
+    if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json(staff);
+    res.status(200).json(user);
   } catch (error) {
     console.error("getMe error:", error);
     res.status(500).json({ message: "Internal server error" });

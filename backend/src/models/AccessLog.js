@@ -16,6 +16,12 @@ const accessLogSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    // Link to Users model for relational lookups
+    userRef: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Users",
+      default: null,
+    },
     readerId: {
       type: String,
       required: true,
@@ -24,6 +30,11 @@ const accessLogSchema = new mongoose.Schema(
     door: {
       type: String,
       required: true,
+    },
+    direction: {
+      type: String,
+      enum: ["in", "out"],
+      default: "in",
     },
     result: {
       type: String,
@@ -47,5 +58,6 @@ const accessLogSchema = new mongoose.Schema(
 // Index for fast lookups
 accessLogSchema.index({ uid: 1, timestamp: -1 });
 accessLogSchema.index({ readerId: 1, timestamp: -1 });
+accessLogSchema.index({ userRef: 1, timestamp: -1 });
 
 module.exports = mongoose.model("AccessLog", accessLogSchema);

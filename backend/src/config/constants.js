@@ -2,14 +2,14 @@
  * Application-wide constants
  */
 
-// User roles
+// User roles (Users model - for auth accounts: staff, students, admins)
 const ROLES = Object.freeze({
   STUDENT: "student",
   STAFF: "staff",
   ADMIN: "admin",
 });
 
-// User/Card lifecycle statuses
+// Card/NfcCardInfo lifecycle statuses
 const STATUS = Object.freeze({
   ACTIVE: "active",
   REVOKED: "revoked",

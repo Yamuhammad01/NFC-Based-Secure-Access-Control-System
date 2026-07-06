@@ -26,7 +26,10 @@ export const register = async (userData) => {
       email: userData.email,
       password: userData.password,
       staffId: userData.staffId, 
-      department: userData.department
+      department: userData.department,
+      firstName: userData.firstName || userData.name?.split(" ")[0],
+      lastName: userData.lastName || userData.name?.split(" ").slice(1).join(" "),
+      name: userData.name,
     };
 
     const response = await api.post("/auth/register", registrationData);
@@ -208,40 +211,42 @@ export const getAccessLogs = async () => {
   }
 };
 
-// Cardholder & Card Lifecycle Management APIs
+// Cardholder & Card Lifecycle Management APIs (now under /api/cards)
 export const getAllUsers = async () => {
   try {
-    const response = await api.get("/users");
+    // Fetch all NFC card records from the new /api/cards endpoint
+    const response = await api.get("/api/cards");
     return response.data;
   } catch (error) {
-    console.error("Failed to fetch cardholders:", error.response?.data || error.message);
+    console.error("Failed to fetch card records:", error.response?.data || error.message);
     throw error;
   }
 };
 
 export const createUser = async (userData) => {
   try {
-    const response = await api.post("/users", userData);
+    // Create a new NFC card record via /api/cards
+    const response = await api.post("/api/cards", userData);
     return response.data;
   } catch (error) {
-    console.error("Failed to register cardholder:", error.response?.data || error.message);
+    console.error("Failed to register card:", error.response?.data || error.message);
     throw error;
   }
 };
 
 export const updateUser = async (id, userData) => {
   try {
-    const response = await api.put(`/users/${id}`, userData);
+    const response = await api.put(`/api/cards/${id}`, userData);
     return response.data;
   } catch (error) {
-    console.error("Failed to update cardholder:", error.response?.data || error.message);
+    console.error("Failed to update card:", error.response?.data || error.message);
     throw error;
   }
 };
 
 export const reportLostCard = async (id) => {
   try {
-    const response = await api.put(`/users/${id}/lost`);
+    const response = await api.put(`/api/cards/${id}/lost`);
     return response.data;
   } catch (error) {
     console.error("Failed to report lost card:", error.response?.data || error.message);
@@ -251,7 +256,7 @@ export const reportLostCard = async (id) => {
 
 export const reportStolenCard = async (id) => {
   try {
-    const response = await api.put(`/users/${id}/stolen`);
+    const response = await api.put(`/api/cards/${id}/stolen`);
     return response.data;
   } catch (error) {
     console.error("Failed to suspend stolen card:", error.response?.data || error.message);
@@ -261,7 +266,7 @@ export const reportStolenCard = async (id) => {
 
 export const replaceCard = async (id, newUid) => {
   try {
-    const response = await api.put(`/users/${id}/replace`, { uid: newUid });
+    const response = await api.put(`/api/cards/${id}/replace`, { uid: newUid });
     return response.data;
   } catch (error) {
     console.error("Failed to replace card:", error.response?.data || error.message);
@@ -271,10 +276,10 @@ export const replaceCard = async (id, newUid) => {
 
 export const deactivateUser = async (id) => {
   try {
-    const response = await api.delete(`/users/${id}`);
+    const response = await api.delete(`/api/cards/${id}`);
     return response.data;
   } catch (error) {
-    console.error("Failed to deactivate account:", error.response?.data || error.message);
+    console.error("Failed to deactivate card:", error.response?.data || error.message);
     throw error;
   }
 };
@@ -289,4 +294,3 @@ export const getUserAccessLogs = async (uid) => {
     throw error;
   }
 };
-

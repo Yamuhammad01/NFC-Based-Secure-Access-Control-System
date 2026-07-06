@@ -1,5 +1,5 @@
-const User = require("../models/User");
-const Reader = require("../models/Reader");
+const NfcCardInfo = require("../models/NfcCardInfo");
+const Users = require("../models/Users");
 const AccessLog = require("../models/AccessLog");
 const { ACCESS_RESULT } = require("../config/constants");
 
@@ -22,41 +22,43 @@ exports.scan = async (req, res) => {
       });
     }
 
-    // 2. Find user by UID
-    const user = await User.findOne({ uid: value });
-    if (!user) {
+    // 2. Find card by UID
+    const card = await NfcCardInfo.findOne({ uid: value });
+    if (!card) {
       return res.status(403).json({
         status: "denied",
-        message: "Unknown credential. User not found.",
+        message: "Unknown credential. Card not found.",
         value
       });
     }
 
     // 3. Card Status Check
-    if (user.status === "revoked") {
+    if (card.status === "revoked") {
       return res.status(403).json({
         status: "denied",
         message: "This credential has been permanently revoked.",
-        user: user.name,
-        role: user.role
+        user: card.name,
+        role: card.role
       });
     }
-    if (user.status === "suspended") {
+    if (card.status === "suspended") {
       return res.status(403).json({
         status: "denied",
         message: "Access temporarily suspended.",
-        user: user.name,
-        role: user.role
+        user: card.name,
+        role: card.role
       });
     }
 
     // 4. RBAC - Check access level for the door
     const requiredLevel = getRequiredLevel(door);
-    if (user.accessLevel < requiredLevel) {
+    if (card.accessLevel < requiredLevel) {
       await AccessLog.create({
         uid: value,
-        userName: user.name,
-        role: user.role,
+        userName: card.name,
+        role: card.role,
+        userRef: card.userRef,
+        readerId: "QR_SCANNER",
         door: door || "unknown",
         result: ACCESS_RESULT.DENIED,
         reason: "Insufficient Access Level",
@@ -66,16 +68,18 @@ exports.scan = async (req, res) => {
       return res.status(403).json({
         status: "denied",
         message: `Insufficient access level. Level ${requiredLevel} required for this area.`,
-        user: user.name,
-        role: user.role
+        user: card.name,
+        role: card.role
       });
     }
 
     // 5. Success
     await AccessLog.create({
       uid: value,
-      userName: user.name,
-      role: user.role,
+      userName: card.name,
+      role: card.role,
+      userRef: card.userRef,
+      readerId: "QR_SCANNER",
       door: door || "unknown",
       result: ACCESS_RESULT.GRANTED,
       timestamp: new Date()
@@ -83,9 +87,9 @@ exports.scan = async (req, res) => {
 
     return res.status(200).json({
       status: "granted",
-      message: `Welcome, ${user.name}. Access granted.`,
-      user: user.name,
-      role: user.role,
+      message: `Welcome, ${card.name}. Access granted.`,
+      user: card.name,
+      role: card.role,
       value
     });
 

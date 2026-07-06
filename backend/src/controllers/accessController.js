@@ -1,11 +1,12 @@
-const User = require("../models/User");
+const NfcCardInfo = require("../models/NfcCardInfo");
+const Users = require("../models/Users");
 const Reader = require("../models/Reader");
 const AccessLog = require("../models/AccessLog");
 const { ACCESS_RESULT } = require("../config/constants");
 
 /**
  * Access Control Engine - Tap Endpoint
- * Logic: Reader Validation -> User Validation -> Status Check -> Anti-Passback -> Time Check -> RBAC -> Logging
+ * Logic: Reader Validation -> Card Validation -> Status Check -> Anti-Passback -> Time Check -> RBAC -> Logging
  */
 exports.tap = async (req, res) => {
   const { uid, readerId, door } = req.body;
@@ -21,58 +22,58 @@ exports.tap = async (req, res) => {
       return logAndDeny(res, { uid, readerId, door, reader }, "Reader Offline", "The access point is currently disabled");
     }
 
-    // 2. Validate User/UID
-    const user = await User.findOne({ uid });
-    if (!user) {
-      return logAndDeny(res, { uid, readerId, door, reader }, "Unknown UID", "User not found");
+    // 2. Validate Card (NfcCardInfo)
+    const card = await NfcCardInfo.findOne({ uid });
+    if (!card) {
+      return logAndDeny(res, { uid, readerId, door, reader }, "Unknown UID", "Card not found in system");
     }
 
     // 3. Card Status Check
-    if (user.status === "revoked") {
-      return logAndDeny(res, { uid, readerId, door, reader, user }, "Card Revoked", "This credential has been permanently revoked");
+    if (card.status === "revoked") {
+      return logAndDeny(res, { uid, readerId, door, reader, card }, "Card Revoked", "This credential has been permanently revoked");
     }
-    if (user.status === "suspended") {
-      return logAndDeny(res, { uid, readerId, door, reader, user }, "User Suspended", "Access temporarily suspended");
+    if (card.status === "suspended") {
+      return logAndDeny(res, { uid, readerId, door, reader, card }, "Card Suspended", "Access temporarily suspended");
     }
 
-     /*// 4. Anti-Passback Logic
-    // Only enforced for 'in' direction. If already inside, can't enter again.
-    if (reader.direction === "in" && user.isInside) {
-      return logAndDeny(res, { uid, readerId, door, reader, user }, "Anti-Passback Violation", "User is already registered as 'Inside'");
-    }
-    // Only 'in' readers can set isInside to true, 'out' readers set it to false.
-    const newInsideStatus = reader.direction === "in" ? true : false;
-
-    // 5. Time-Based Access
-     if (!isWithinAllowedTime(user.allowedTime)) {
-      return logAndDeny(res, { uid, readerId, door, reader, user }, "Outside Allowed Hours", `Access only permitted between ${user.allowedTime.start} and ${user.allowedTime.end}`);
-    } */
-
-    // 6. RBAC (Access Levels)
+    // 4. RBAC (Access Levels)
     const requiredLevel = getRequiredLevel(door);
-    if (user.accessLevel < requiredLevel) {
-      return logAndDeny(res, { uid, readerId, door, reader, user }, "Insufficient Access Level", `Level ${requiredLevel} required for this area`);
+    if (card.accessLevel < requiredLevel) {
+      return logAndDeny(res, { uid, readerId, door, reader, card }, "Insufficient Access Level", `Level ${requiredLevel} required for this area`);
     }
 
-    // 7. Success - Update User State & Log
-    //    user.isInside = newInsideStatus;
-    await user.save();
+    // 5. Success - Update Card State & Log
+    await card.save();
+
+    // Try to find linked user for enriched logging
+    let userName = card.name;
+    let userRole = card.role;
+    let userRef = card.userRef || null;
+    if (card.userRef) {
+      const user = await Users.findById(card.userRef).select("name role");
+      if (user) {
+        userName = user.name;
+        userRole = user.role;
+      }
+    }
 
     await AccessLog.create({
       uid,
-      userName: user.name,
-      role: user.role,
+      userName,
+      role: userRole,
+      userRef,
       readerId,
       door,
+      direction: reader.direction || "in",
       result: ACCESS_RESULT.GRANTED,
       timestamp: new Date()
     });
 
     return res.status(200).json({
       status: "granted",
-      message: `Welcome, ${user.name}. Access granted to ${door}.`,
-      user: user.name,
-      role: user.role
+      message: `Welcome, ${userName}. Access granted to ${door}.`,
+      user: userName,
+      role: userRole
     });
 
   } catch (error) {
@@ -110,25 +111,30 @@ function isWithinAllowedTime(allowedTime) {
  * Helper: Log denial and return response
  */
 async function logAndDeny(res, context, reason, message) {
-  const { uid, readerId, door, user } = context;
+  const { uid, readerId, door, card, reader } = context;
+
+  let userName = card ? card.name : "Unknown";
+  let userRole = card ? card.role : "Unknown";
+  let userRef = card ? card.userRef : null;
 
   await AccessLog.create({
     uid,
-    userName: user ? user.name : "Unknown",
-    role: user ? user.role : "Unknown",
+    userName,
+    role: userRole,
+    userRef,
     readerId,
     door,
+    direction: reader ? reader.direction : "in",
     result: ACCESS_RESULT.DENIED,
     reason,
     timestamp: new Date()
-
   });
 
   return res.status(403).json({
     status: "denied",
     message,
-    user: user ? user.name : "Unknown",
-    role: user ? user.role : "Unknown"
+    user: userName,
+    role: userRole
   });
 }
 
