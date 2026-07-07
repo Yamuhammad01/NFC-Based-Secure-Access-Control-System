@@ -85,6 +85,17 @@ export const getToken = () => {
   return localStorage.getItem("authToken");
 };
 
+// Change password (for first-time login or general change)
+export const changePassword = async (currentPassword, newPassword) => {
+  try {
+    const response = await api.post("/auth/change-password", { currentPassword, newPassword });
+    return response.data;
+  } catch (error) {
+    console.error("Failed to change password:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
 // Add profile photo
 export const addProfilePhoto = async (photoFile) => {
   try {
@@ -280,6 +291,27 @@ export const deactivateUser = async (id) => {
     return response.data;
   } catch (error) {
     console.error("Failed to deactivate card:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+// Dashboard API functions
+export const getDashboardStats = async () => {
+  try {
+    const response = await api.get("/dashboard/stats");
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch dashboard stats:", error.response?.data || error.message);
+    throw error;
+  }
+};
+
+export const getRecentActivity = async (limit = 5) => {
+  try {
+    const response = await api.get(`/dashboard/recent-activity?limit=${limit}`);
+    return response.data;
+  } catch (error) {
+    console.error("Failed to fetch recent activity:", error.response?.data || error.message);
     throw error;
   }
 };

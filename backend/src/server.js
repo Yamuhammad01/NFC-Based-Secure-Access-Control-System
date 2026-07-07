@@ -17,6 +17,7 @@ const readerRoutes = require("./routes/readerRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const profileRoutes = require("./routes/profileRoutes");
 const scanRoutes = require("./routes/scanRoutes");
+const dashboardRoutes = require("./routes/dashboardRoutes");
 
 
 const app = express();
@@ -49,6 +50,7 @@ app.use("/api/readers", readerRoutes);
 app.use(["/api/Admin", "/api/api/Admin"], adminRoutes);
 app.use("/api", profileRoutes);
 app.use("/api/scan", scanRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

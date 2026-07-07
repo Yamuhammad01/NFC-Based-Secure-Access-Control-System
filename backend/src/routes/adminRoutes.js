@@ -2,9 +2,19 @@ const express = require("express");
 const router = express.Router();
 const authenticate = require("../middlewares/auth");
 const Users = require("../models/Users");
-const Department = require("../models/Department");
 const AdminAuditLog = require("../models/AdminAuditLog");
 const bcrypt = require("bcryptjs");
+const crypto = require("crypto");
+
+// Generate a secure random temporary password
+function generateTempPassword() {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789!@#";
+  let password = "";
+  for (let i = 0; i < 12; i++) {
+    password += chars.charAt(crypto.randomInt(chars.length));
+  }
+  return "A" + password.slice(1, -1) + "1!";
+}
 
 // GET /api/Admin/check-role
 router.get("/check-role", authenticate, (req, res) => {
@@ -38,7 +48,7 @@ router.get("/total-departments", authenticate, async (req, res) => {
 // GET /api/Admin/get/all-staff
 router.get("/get/all-staff", authenticate, async (req, res) => {
   try {
-    const userList = await Users.find().select("-password");
+    const userList = await Users.find().select("-password -resetPasswordToken -resetPasswordExpires");
     const mappedList = userList.map(u => {
       const obj = u.toObject();
       obj.id = u._id.toString();
@@ -67,7 +77,8 @@ router.post("/invite", authenticate, async (req, res) => {
       return res.status(400).json({ message: "User email or ID already registered" });
     }
 
-    const hashedPassword = await bcrypt.hash("password123", 10); // default password
+    const tempPassword = generateTempPassword();
+    const hashedPassword = await bcrypt.hash(tempPassword, 10);
 
     const newUser = new Users({
       name,
@@ -80,7 +91,9 @@ router.post("/invite", authenticate, async (req, res) => {
       phone,
       profilePhoto: photo,
       status: "active",
-      role: role || "staff"
+      role: role || "staff",
+      mustChangePassword: true, // Force password change on first login
+      createdBy: req.user.userId,
     });
 
     await newUser.save();
@@ -99,11 +112,16 @@ router.post("/invite", authenticate, async (req, res) => {
 
     const userObj = newUser.toObject();
     delete userObj.password;
+    delete userObj.resetPasswordToken;
+    delete userObj.resetPasswordExpires;
     userObj.id = newUser._id.toString();
 
     res.status(201).json({
       message: "Staff member added successfully",
-      staff: userObj
+      staff: userObj,
+      // Return the temporary password so the admin can share it with the user
+      tempPassword,
+      tempPasswordMessage: `User can login with email ${newUser.email} and temporary password: ${tempPassword}. They will be prompted to change it on first login.`,
     });
   } catch (error) {
     console.error("Invite error:", error);
@@ -114,7 +132,7 @@ router.post("/invite", authenticate, async (req, res) => {
 // GET /api/Admin/getstaffby/:id
 router.get("/getstaffby/:id", authenticate, async (req, res) => {
   try {
-    const user = await Users.findById(req.params.id).select("-password");
+    const user = await Users.findById(req.params.id).select("-password -resetPasswordToken -resetPasswordExpires");
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
@@ -144,7 +162,7 @@ router.put("/update/staff/:id", authenticate, async (req, res) => {
       req.params.id,
       updateData,
       { new: true }
-    ).select("-password");
+    ).select("-password -resetPasswordToken -resetPasswordExpires");
 
     if (!updatedUser) {
       return res.status(404).json({ message: "User not found" });

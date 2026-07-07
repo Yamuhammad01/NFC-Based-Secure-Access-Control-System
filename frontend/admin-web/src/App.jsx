@@ -5,9 +5,8 @@ import LoginForm from './pages/Auth/login';
 import Register from './pages/Auth/register';
 import ForgotPassword from './pages/Auth/forgotPassword';
 import ResetPassword from './pages/Auth/resetPassword';
-import EmployeeTable from './pages/dashboard/admin/employees';
-import Adminprofile from './pages/dashboard/admin/adminprofile';
-import AuditLogs from './pages/dashboard/admin/auditLogs';
+import ForcePasswordChange from './pages/Auth/forcePasswordChange';
+import DashboardOverview from './pages/dashboard/admin/DashboardOverview';
 import BusinessCard from './pages/dashboard/staff/BusinessCard';
 import StaffId from './pages/dashboard/staff/staffId';
 import StaffProfile from './pages/dashboard/staff/Profile';
@@ -49,9 +48,8 @@ function App() {
         <Route path="/register" element={<Register />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
-        <Route path="/dashboard/admin" element={<Adminprofile />} />
-        <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />
-        <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />
+        <Route path="/force-password-change" element={<ForcePasswordChange />} />
+        <Route path="/dashboard/admin" element={<DashboardOverview />} />
         <Route path="/dashboard/staff" element={<Navigate to="/dashboard/staff/profile" replace />} />
         <Route path="/dashboard/staff/profile" element={<StaffProfile />} />
         <Route path="/dashboard/staff/BusinessCard" element={<BusinessCard />} />
@@ -63,4 +61,4 @@ function App() {
   );
 }
 
-export default App; 
+export default App;

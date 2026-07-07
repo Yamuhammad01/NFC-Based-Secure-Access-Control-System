@@ -9,7 +9,8 @@ import ForgotPassword from './pages/Auth/forgotPassword'
 import ResetPassword from './pages/Auth/resetPassword'
 // import AdminDashboard from '../AdminDashboard'
 import EmployeeTable from './pages/dashboard/admin/employees'
-import Adminprofile from './pages/dashboard/admin/adminprofile'
+//import Adminprofile from './pages/dashboard/admin/adminprofile'
+import DashboardOverview from './pages/dashboard/admin/DashboardOverview';
 import AuditLogs from './pages/dashboard/admin/auditLogs'
 import CardManagement from './pages/dashboard/admin/cards'
 //import BusinessCard from './pages/dashboard/staff/BusinessCard'
@@ -61,7 +62,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
         {/* <Route path="/dashboard/admin" element={<AdminDashboard />} /> */}
-        <Route path="/dashboard/admin" element={<Adminprofile />} />
+        <Route path="/dashboard/admin" element={<DashboardOverview />} />
         <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />
         <Route path="/dashboard/admin/cards" element={<CardManagement />} />
         <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />

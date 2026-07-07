@@ -91,7 +91,7 @@ const DashboardLayout = ({ children }) => {
 
   // Sidebar menus for staff
   const staffMenu = [
-    { name: "Profile", icon: <FaUser className="text-purple-600" />, href: "/dashboard/staff/profile", bg: "bg-purple-100" },
+    { name: "Profile", icon: <FaUserCircle className="text-purple-600" />, href: "/dashboard/staff/profile", bg: "bg-purple-100" },
     { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/staff/permissions", bg: "bg-rose-100" },
     { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/staff/logs", bg: "bg-blue-100" },
     { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/staff/timeline", bg: "bg-violet-100" },
@@ -103,10 +103,7 @@ const DashboardLayout = ({ children }) => {
 
   // Sidebar menus for admin
   const adminMenu = [
-    { name: "Dashboard", icon: <FaUsers className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-100" },
-    { name: "Employees", icon: <FaUsers className="text-indigo-600" />, href: "/dashboard/admin/employees", bg: "bg-indigo-100" },
-    { name: "Cards", icon: <FaIdCard className="text-indigo-600" />, href: "/dashboard/admin/cards", bg: "bg-indigo-100" },
-    { name: "Audit Log", icon: <FaChartBar className="text-orange-600" />, href: "/dashboard/admin/audit-logs", bg: "bg-orange-100" },
+    { name: "Dashboard", icon: <FaChartBar className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-100" },
   ];
 
   // Choose menu based on role

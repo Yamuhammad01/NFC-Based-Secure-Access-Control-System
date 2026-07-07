@@ -68,16 +68,21 @@ const usersSchema = new mongoose.Schema(
       default: "active",
     },
 
+    // ===== Password Policy =====
+    mustChangePassword: {
+      type: Boolean,
+      default: true, // New users must change their temporary password on first login
+    },
+
     // ===== NFC Card Reference =====
-    // Currently assigned NFC card UID (one user can have one active card)
     uid: {
       type: String,
       uppercase: true,
       trim: true,
-      sparse: true, // allows multiple nulls but unique when set
+      sparse: true,
     },
 
-    // ===== Access Control Fields (mirrored from NfcCardInfo for quick lookup) =====
+    // ===== Access Control Fields =====
     accessLevel: {
       type: Number,
       enum: [1, 2, 3],
@@ -92,10 +97,20 @@ const usersSchema = new mongoose.Schema(
       default: false,
     },
 
+    // ===== Password Reset =====
+    resetPasswordToken: {
+      type: String,
+      default: null,
+    },
+    resetPasswordExpires: {
+      type: Date,
+      default: null,
+    },
+
     // ===== Audit Trail =====
     createdBy: {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "Users", // admin who created this user
+      ref: "Users",
       default: null,
     },
   },

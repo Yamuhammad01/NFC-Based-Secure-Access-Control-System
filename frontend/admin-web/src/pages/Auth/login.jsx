@@ -37,19 +37,27 @@ export default function LoginForm() {
 
       localStorage.setItem("authToken", token)
 
-      // Step 2: Check role
-      const role = await getUserRole()
-      console.log("User role:", role)
+      // Step 2: Get role from response (to avoid extra API call)
+      const userRole = response?.user?.role?.toLowerCase() || "staff"
+      console.log("User role from response:", userRole)
 
-      // Step 3: Save role and navigate
-      localStorage.setItem("userRole", role.toLowerCase())
+      // Step 3: Check if user must change their temporary password
+      // Only staff and students are forced to change password, not admins
+      if (response.mustChangePassword === true && userRole !== "admin") {
+        // Redirect to force password change page
+        localStorage.setItem("userRole", userRole)
+        navigate("/force-password-change")
+        return
+      }
 
-      if (role.toLowerCase() === "admin") {
+      // Step 4: Save role and navigate
+      localStorage.setItem("userRole", userRole)
+
+      if (userRole === "admin") {
         navigate("/dashboard/admin")
-      } else if (role.toLowerCase() === "staff") {
-        navigate("/dashboard/staff")
       } else {
-        setError("You are not authorized to access this system.")
+        // Staff and students go to the same staff dashboard
+        navigate("/dashboard/staff/profile")
       }
 
     } catch (error) {
@@ -179,9 +187,7 @@ export default function LoginForm() {
           <div className="mt-6 text-center">
             <p className="text-sm text-gray-600">
               Don't have an account?{' '}
-              <Link to="/register" className="font-medium text-blue-600 hover:text-blue-500">
-                Register
-              </Link>
+              <span className="text-gray-400">Contact your administrator</span>
             </p>
           </div>
         </div>
