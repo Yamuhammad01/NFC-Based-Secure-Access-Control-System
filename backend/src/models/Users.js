@@ -113,6 +113,21 @@ const usersSchema = new mongoose.Schema(
       ref: "Users",
       default: null,
     },
+
+    // ===== Card Status & Soft Delete =====
+    cardStatus: {
+      type: String,
+      enum: ["active", "revoked", "suspended", "inactive"],
+      default: "active",
+    },
+    isDeleted: {
+      type: Boolean,
+      default: false,
+    },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
   },
   { timestamps: true }
 );

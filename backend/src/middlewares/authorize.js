@@ -1,16 +1,15 @@
-/**
- * RBAC Middleware
- * Restricts route access to specific roles.
- *
- * Usage: authorize("admin", "security")
- */
 const authorize = (...allowedRoles) => {
   return (req, res, next) => {
-    // TODO: Check req.user.role against allowedRoles
-    // If not authorized, return 403
-    res
-      .status(501)
-      .json({ message: "authorize middleware – not implemented" });
+    if (!req.user || !req.user.role) {
+      return res.status(401).json({ message: "Access denied. User not authenticated." });
+    }
+    
+    const hasRole = allowedRoles.includes(req.user.role.toLowerCase());
+    if (!hasRole) {
+      return res.status(403).json({ message: "Access denied. You do not have permission to perform this action." });
+    }
+    
+    next();
   };
 };
 
