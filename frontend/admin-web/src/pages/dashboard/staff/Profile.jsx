@@ -133,7 +133,7 @@ const StaffProfile = () => {
   const navigate = useNavigate();
   // Handle request access - redirect to temp-access page
   const handleRequestAccess = (area) => {
-    navigate("/dashboard/staff/temp-access");
+    navigate("/dashboard/temp-access");
   };
 
   // Helper QR content

@@ -40,7 +40,7 @@ const StaffPermissions = () => {
   }, []);
 
   const handleRequestAccess = (area) => {
-    navigate("/dashboard/staff/temp-access");
+    navigate("/dashboard/temp-access");
   };
 
   if (loading) {

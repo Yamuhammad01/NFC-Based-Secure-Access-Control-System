@@ -56,8 +56,8 @@ export default function LoginForm() {
       if (userRole === "admin") {
         navigate("/dashboard/admin")
       } else {
-        // Staff and students go to the same staff dashboard
-        navigate("/dashboard/staff/profile")
+        // Staff and students go to the same generic dashboard profile
+        navigate("/dashboard/profile")
       }
 
     } catch (error) {

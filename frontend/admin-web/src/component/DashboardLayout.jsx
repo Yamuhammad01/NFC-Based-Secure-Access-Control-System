@@ -89,27 +89,27 @@ const DashboardLayout = ({ children }) => {
 
   const cancelLogout = () => setShowLogoutModal(false);
 
-  // Sidebar menus for staff
+  // Sidebar menus for staff (generic routes)
   const staffMenu = [
-    { name: "Profile", icon: <FaUserCircle className="text-purple-600" />, href: "/dashboard/staff/profile", bg: "bg-purple-100" },
-    { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/staff/permissions", bg: "bg-rose-100" },
-    { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/staff/logs", bg: "bg-blue-100" },
-    { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/staff/timeline", bg: "bg-violet-100" },
-    { name: "Card Replacement",       icon: <FaExchangeAlt className="text-amber-600" />,  href: "/dashboard/staff/replacement",    bg: "bg-amber-100"  },
-    { name: "Notifications",     icon: <FaBell        className="text-indigo-600" />, href: "/dashboard/staff/notifications", bg: "bg-indigo-100", badge: true },
-    { name: "Temp Access",        icon: <FaKey         className="text-emerald-600" />, href: "/dashboard/staff/temp-access",   bg: "bg-emerald-100" },
-    { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/staff/settings",      bg: "bg-teal-100"   },
+    { name: "Profile", icon: <FaUserCircle className="text-purple-600" />, href: "/dashboard/profile", bg: "bg-purple-100" },
+    { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/permissions", bg: "bg-rose-100" },
+    { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/logs", bg: "bg-blue-100" },
+    { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/timeline", bg: "bg-violet-100" },
+    { name: "Card Replacement",       icon: <FaExchangeAlt className="text-amber-600" />,  href: "/dashboard/replacement",    bg: "bg-amber-100"  },
+    { name: "Notifications",     icon: <FaBell        className="text-indigo-600" />, href: "/dashboard/notifications", bg: "bg-indigo-100", badge: true },
+    { name: "Temp Access",        icon: <FaKey         className="text-emerald-600" />, href: "/dashboard/temp-access",   bg: "bg-emerald-100" },
+    { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/settings",      bg: "bg-teal-100"   },
   ];
 
-  // Sidebar menus for student
+  // Sidebar menus for student (generic routes)
   const studentMenu = [
-    { name: "Profile", icon: <FaUserCircle className="text-emerald-600" />, href: "/dashboard/student/profile", bg: "bg-emerald-100" },
-    { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/student/permissions", bg: "bg-rose-100" },
-    { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/student/logs", bg: "bg-blue-100" },
-    { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/student/timeline", bg: "bg-violet-100" },
-    { name: "Notifications",     icon: <FaBell        className="text-indigo-600" />, href: "/dashboard/student/notifications", bg: "bg-indigo-100", badge: true },
-    { name: "Temp Access",        icon: <FaKey         className="text-emerald-600" />, href: "/dashboard/student/temp-access",   bg: "bg-emerald-100" },
-    { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/student/settings",      bg: "bg-teal-100"   },
+    { name: "Profile", icon: <FaUserCircle className="text-emerald-600" />, href: "/dashboard/profile", bg: "bg-emerald-100" },
+    { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/permissions", bg: "bg-rose-100" },
+    { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/logs", bg: "bg-blue-100" },
+    { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/timeline", bg: "bg-violet-100" },
+    { name: "Notifications",     icon: <FaBell        className="text-indigo-600" />, href: "/dashboard/notifications", bg: "bg-indigo-100", badge: true },
+    { name: "Temp Access",        icon: <FaKey         className="text-emerald-600" />, href: "/dashboard/temp-access",   bg: "bg-emerald-100" },
+    { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/settings",      bg: "bg-teal-100"   },
   ];
 
   // Sidebar menus for admin

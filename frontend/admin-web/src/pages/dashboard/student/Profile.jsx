@@ -118,7 +118,7 @@ const StudentProfile = () => {
 
   // Handle request access - redirect to temp-access page
   const handleRequestAccess = (area) => {
-    navigate("/dashboard/student/temp-access");
+    navigate("/dashboard/temp-access");
   };
 
   const qrValue = profile ? JSON.stringify({
