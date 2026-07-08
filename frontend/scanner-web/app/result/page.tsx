@@ -56,18 +56,16 @@ export default function ResultPage() {
         </div>
 
         {/* User info card */}
-        {(result.user || result.role) && (
+        {result.userName && (
           <div className="w-full rounded-2xl bg-white/5 border border-white/10 divide-y divide-white/10">
-            {result.user && (
-              <div className="flex items-center justify-between px-5 py-4">
-                <span className="text-gray-400 text-sm">Name</span>
-                <span className="text-white font-medium text-sm">{result.user}</span>
-              </div>
-            )}
+            <div className="flex items-center justify-between px-5 py-4">
+              <span className="text-gray-400 text-sm">Name</span>
+              <span className="text-white font-medium text-sm">{result.userName}</span>
+            </div>
             {result.role && (
               <div className="flex items-center justify-between px-5 py-4">
                 <span className="text-gray-400 text-sm">Role</span>
-                <span className="text-white font-medium text-sm">{result.role}</span>
+                <span className="text-white font-medium text-sm capitalize">{result.role}</span>
               </div>
             )}
           </div>

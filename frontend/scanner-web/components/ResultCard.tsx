@@ -59,9 +59,9 @@ export const ResultCard = ({ result, state, onReset }: ResultCardProps) => {
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3 text-text-secondary">
                 <User className="w-4 h-4" />
-                <span className="text-sm">User ID</span>
+                <span className="text-sm">Name</span>
               </div>
-              <span className="text-white font-mono">{result.userId}</span>
+              <span className="text-white font-mono">{result.userName}</span>
             </div>
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-3 text-text-secondary">

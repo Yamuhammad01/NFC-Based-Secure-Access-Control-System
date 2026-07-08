@@ -1,7 +1,8 @@
 const NfcCardInfo = require("../models/NfcCardInfo");
 const Users = require("../models/Users");
 const AccessLog = require("../models/AccessLog");
-const { ACCESS_RESULT } = require("../config/constants");
+const RolePermission = require("../models/RolePermission");
+const { ACCESS_RESULT, ROLES } = require("../config/constants");
 
 /**
  * POST /api/scan
@@ -50,9 +51,16 @@ exports.scan = async (req, res) => {
       });
     }
 
-    // 4. RBAC - Check access level for the door
-    const requiredLevel = getRequiredLevel(door);
-    if (card.accessLevel < requiredLevel) {
+    // 4. RBAC - Check role-based permission for the door
+    const rolePermission = await RolePermission.findOne({ role: card.role });
+    
+    // Handle special case: if allowedAreas is empty, grant access by default (e.g., admin role)
+    const hasPermission = rolePermission && (
+      rolePermission.allowedAreas.length === 0 || 
+      rolePermission.allowedAreas.includes(door)
+    );
+    
+    if (!hasPermission) {
       await AccessLog.create({
         uid: value,
         userName: card.name,
@@ -61,13 +69,13 @@ exports.scan = async (req, res) => {
         readerId: "QR_SCANNER",
         door: door || "unknown",
         result: ACCESS_RESULT.DENIED,
-        reason: "Insufficient Access Level",
+        reason: "Insufficient Permissions",
         timestamp: new Date()
       });
 
       return res.status(403).json({
         status: "denied",
-        message: `Insufficient access level. Level ${requiredLevel} required for this area.`,
+        message: `Access denied. Your role (${card.role}) does not have permission for this area.`,
         user: card.name,
         role: card.role
       });
@@ -102,17 +110,3 @@ exports.scan = async (req, res) => {
   }
 };
 
-/**
- * Helper: Map doors to access levels
- */
-function getRequiredLevel(door) {
-  const mapping = {
-    main_gate: 1,
-    lab: 1,
-    staff_office: 2,
-    server_room: 3,
-  };
-  if (!door) return 1;
-  const normalized = door.toLowerCase().replace(/\s+/g, '_');
-  return mapping[normalized] || 1;
-}

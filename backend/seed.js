@@ -141,7 +141,7 @@ const seedData = async () => {
   const rolePermissions = [
     {
       role: "admin",
-      allowedAreas: [], // Admin has access to all areas
+      allowedAreas: [], // Admin has access to all areas (empty = grant all)
       updatedBy: null,
       updatedAt: new Date(),
     },
@@ -159,6 +159,11 @@ const seedData = async () => {
         "staff-meeting-room",
         "senate-building",
         "academic-planning",
+        "staff-office",
+        "dept-office",
+        "lab",
+        "conf",
+        "exec",
       ],
       updatedBy: null,
       updatedAt: new Date(),
@@ -170,6 +175,8 @@ const seedData = async () => {
         "cafeteria",
         "medical-centre",
         "student-affairs",
+        "lab",
+        "conf",
       ],
       updatedBy: null,
       updatedAt: new Date(),

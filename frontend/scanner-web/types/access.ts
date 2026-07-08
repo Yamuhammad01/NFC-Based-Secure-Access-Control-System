@@ -8,5 +8,7 @@ export interface VerifyAccessResponse {
   status: "granted" | "denied" | "error";
   message: string;
   user: string;
+  userName?: string;
+  userId?: string;
   role: string;
 }

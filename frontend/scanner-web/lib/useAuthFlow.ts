@@ -6,6 +6,7 @@ export type AuthState = 'idle' | 'door-select' | 'scanning' | 'verifying' | 'gra
 export interface ScanResult {
   success: boolean;
   userId?: string;
+  userName?: string;
   door?: string;
   time?: string;
   date?: string;
@@ -54,6 +55,7 @@ export const useAuthFlow = () => {
         setResult({
           success: true,
           userId: data.value,
+          userName: data.user,
           door: selectedDoor || undefined,
           time: new Date().toLocaleTimeString(),
           date: new Date().toLocaleDateString('en-GB', { 
@@ -86,17 +88,6 @@ export const useAuthFlow = () => {
     setSelectedDoor(null);
     setResult(null);
   }, []);
-
-  // Auto-reset from granted or denied
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (state === 'granted') {
-      timer = setTimeout(reset, 8000); // 8 seconds for granted to show card
-    } else if (state === 'denied') {
-      timer = setTimeout(reset, 3000); // 3 seconds for denied
-    }
-    return () => clearTimeout(timer);
-  }, [state, reset]);
 
   return {
     state,
