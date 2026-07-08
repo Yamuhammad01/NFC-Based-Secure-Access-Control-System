@@ -1,68 +1,18 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import DashboardLayout from "../../../component/DashboardLayout";
+import AccessMatrix from "../../../component/AccessMatrix";
 import { 
   FaShieldAlt, 
-  FaCheckCircle, 
-  FaTimesCircle, 
-  FaBuilding, 
-  FaLock, 
-  FaUnlockAlt, 
-  FaSearch, 
   FaSync 
 } from "react-icons/fa";
 import { getProfile } from "../../../Api/authService";
 
 const StaffPermissions = () => {
+  const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [searchQuery, setSearchQuery] = useState("");
   const [logsLoading, setLogsLoading] = useState(false);
-
-  // Dynamic Locations Permission Setup
-  const initialPermissionsArray = [
-    { 
-      id: "loc-1", 
-      name: "Main Campus Gate", 
-      minLevel: 1, 
-      category: "General Entrance",
-      description: "General campus entry points, main halls, and public yards." 
-    },
-    { 
-      id: "loc-2", 
-      name: "Departmental Laboratories", 
-      minLevel: 1, 
-      category: "Academic Suites",
-      description: "Subject laboratories, general work complexes, and study suites." 
-    },
-    { 
-      id: "loc-3", 
-      name: "Academic Registry Suite", 
-      minLevel: 2, 
-      category: "Administrative Sector",
-      description: "Academic Registry Suite, staff offices, and general archives." 
-    },
-    { 
-      id: "loc-4", 
-      name: "Dean's Conference Room", 
-      minLevel: 2, 
-      category: "Administrative Sector",
-      description: "Administrative chambers, conference halls, and leadership suites." 
-    },
-    { 
-      id: "loc-5", 
-      name: "Core IT Server Rooms", 
-      minLevel: 3, 
-      category: "Restricted Infrastructure",
-      description: "Central network cabinets, databases, and power panels." 
-    },
-    { 
-      id: "loc-6", 
-      name: "University Vault Complex", 
-      minLevel: 3, 
-      category: "Restricted Infrastructure",
-      description: "University financial archives, secure vaults, and storage spaces." 
-    }
-  ];
 
   const fetchProfileDetails = async () => {
     try {
@@ -71,13 +21,13 @@ const StaffPermissions = () => {
       setProfile(profileData);
     } catch (error) {
       console.warn("Could not load backend profile, defaulting to standard mock credentials:", error);
-      // Clean mock credentials fallback for testing UI
       setProfile({
         staffId: "ST2026001",
         firstName: "John",
         lastName: "Doe",
         department: "Registry & Academic Affairs",
-        accessLevel: 2
+        accessLevel: 2,
+        role: "staff"
       });
     } finally {
       setLoading(false);
@@ -88,6 +38,10 @@ const StaffPermissions = () => {
   useEffect(() => {
     fetchProfileDetails();
   }, []);
+
+  const handleRequestAccess = (area) => {
+    navigate("/dashboard/staff/temp-access");
+  };
 
   if (loading) {
     return (
@@ -101,12 +55,6 @@ const StaffPermissions = () => {
   }
 
   const accessLevel = profile?.accessLevel || 2;
-
-  // Filter based on search query
-  const filteredPermissions = initialPermissionsArray.filter(loc => 
-    loc.name.toLowerCase().includes(searchQuery.toLowerCase()) || 
-    loc.category.toLowerCase().includes(searchQuery.toLowerCase())
-  );
 
   return (
     <DashboardLayout role="staff">
@@ -137,21 +85,8 @@ const StaffPermissions = () => {
           </div>
         </div>
 
-        {/* CONTROLS BAR (SEARCH + REFRESH) */}
-        <div className="flex flex-col sm:flex-row justify-between items-center gap-4 mb-6 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
-          <div className="relative w-full sm:max-w-md">
-            <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-              <FaSearch className="text-slate-400" />
-            </div>
-            <input 
-              type="text" 
-              placeholder="Search secure zones or categories..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="input input-bordered w-full pl-10 bg-slate-50 border-slate-200 text-slate-800 placeholder-slate-400 text-sm h-11"
-            />
-          </div>
-          
+        {/* CONTROLS BAR */}
+        <div className="flex flex-col sm:flex-row justify-end items-center gap-4 mb-6 bg-white p-4 rounded-2xl border border-slate-100 shadow-sm">
           <button 
             onClick={fetchProfileDetails}
             className="btn btn-outline btn-rose btn-sm flex items-center gap-2 font-bold w-full sm:w-auto h-11"
@@ -162,70 +97,12 @@ const StaffPermissions = () => {
           </button>
         </div>
 
-        {/* ACTIVE ACCESS MATRIX CARDS GRID */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredPermissions.map((location) => {
-            const hasAccess = accessLevel >= location.minLevel;
-            return (
-              <div 
-                key={location.id} 
-                className={`relative overflow-hidden rounded-2xl border p-5 shadow-sm transition-all duration-300 hover:shadow-md ${
-                  hasAccess 
-                    ? "bg-emerald-50/70 border-emerald-100 hover:bg-emerald-50" 
-                    : "bg-rose-50/40 border-rose-100/50 hover:bg-rose-50/60"
-                }`}
-              >
-                {/* Visual Glow Indicator */}
-                <span className={`absolute top-0 left-0 w-full h-1 ${
-                  hasAccess ? "bg-emerald-500" : "bg-rose-500"
-                }`}></span>
-
-                <div className="flex justify-between items-start gap-4 mb-4">
-                  {/* Category & Badge */}
-                  <div>
-                    <span className={`text-[10px] font-extrabold uppercase px-2 py-0.5 rounded tracking-wide ${
-                      hasAccess ? "bg-emerald-100 text-emerald-800" : "bg-rose-100 text-rose-800"
-                    }`}>
-                      {location.category}
-                    </span>
-                    <h3 className="text-base font-extrabold text-slate-800 mt-2 tracking-tight">
-                      {location.name}
-                    </h3>
-                  </div>
-
-                  {/* Access Status Icon */}
-                  <div className={`p-2.5 rounded-xl ${
-                    hasAccess ? "bg-emerald-100/80 text-emerald-600" : "bg-rose-100/80 text-rose-600"
-                  }`}>
-                    {hasAccess ? <FaUnlockAlt size={18} /> : <FaLock size={18} />}
-                  </div>
-                </div>
-
-                <p className="text-xs text-slate-600 font-medium leading-relaxed mb-6 h-10 overflow-hidden">
-                  {location.description}
-                </p>
-
-                {/* Bottom Row - Required Tier & Decision Badge */}
-                <div className="border-t border-slate-100 pt-4 mt-2 flex justify-between items-center text-xs font-extrabold">
-                  <div className="flex items-center gap-1.5 text-slate-500">
-                    <FaBuilding size={14} className="text-slate-400" />
-                    <span>Req. Level {location.minLevel}+</span>
-                  </div>
-                  
-                  {hasAccess ? (
-                    <span className="flex items-center gap-1 text-emerald-600 font-extrabold text-xs">
-                      <FaCheckCircle className="text-emerald-500" /> APPROVED
-                    </span>
-                  ) : (
-                    <span className="flex items-center gap-1 text-rose-600 font-extrabold text-xs">
-                      <FaTimesCircle className="text-rose-500" /> DENIED
-                    </span>
-                  )}
-                </div>
-              </div>
-            );
-          })}
-        </div>
+        {/* ACCESS MATRIX */}
+        <AccessMatrix 
+          userRole="staff"
+          accessLevel={accessLevel}
+          onRequestAccess={handleRequestAccess}
+        />
 
         {/* SECURITY CLASSIFICATION FOOTER SUMMARY */}
         <div className="mt-8 bg-white rounded-2xl border border-slate-100 shadow-sm p-6">

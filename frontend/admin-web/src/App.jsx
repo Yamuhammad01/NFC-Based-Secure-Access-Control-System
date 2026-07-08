@@ -10,6 +10,7 @@ import DashboardOverview from './pages/dashboard/admin/DashboardOverview';
 import BusinessCard from './pages/dashboard/staff/BusinessCard';
 import StaffId from './pages/dashboard/staff/staffId';
 import StaffProfile from './pages/dashboard/staff/Profile';
+import StudentProfile from './pages/dashboard/student/Profile';
 import Settings from './pages/dashboard/staff/settings';
 
 // Component to handle root redirects based on URL hash
@@ -55,6 +56,8 @@ function App() {
         <Route path="/dashboard/staff/BusinessCard" element={<BusinessCard />} />
         <Route path="/dashboard/staff/staffId" element={<StaffId />} />
         <Route path="/dashboard/staff/settings" element={<Settings />} />
+        <Route path="/dashboard/student" element={<Navigate to="/dashboard/student/profile" replace />} />
+        <Route path="/dashboard/student/profile" element={<StudentProfile />} />
         <Route path="/dashboard" element={<Navigate to="/dashboard/staff/profile" replace />} />
       </Routes>
     </Router>

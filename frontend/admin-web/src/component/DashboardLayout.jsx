@@ -101,6 +101,17 @@ const DashboardLayout = ({ children }) => {
     { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/staff/settings",      bg: "bg-teal-100"   },
   ];
 
+  // Sidebar menus for student
+  const studentMenu = [
+    { name: "Profile", icon: <FaUserCircle className="text-emerald-600" />, href: "/dashboard/student/profile", bg: "bg-emerald-100" },
+    { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/student/permissions", bg: "bg-rose-100" },
+    { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/student/logs", bg: "bg-blue-100" },
+    { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/student/timeline", bg: "bg-violet-100" },
+    { name: "Notifications",     icon: <FaBell        className="text-indigo-600" />, href: "/dashboard/student/notifications", bg: "bg-indigo-100", badge: true },
+    { name: "Temp Access",        icon: <FaKey         className="text-emerald-600" />, href: "/dashboard/student/temp-access",   bg: "bg-emerald-100" },
+    { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/student/settings",      bg: "bg-teal-100"   },
+  ];
+
   // Sidebar menus for admin
   const adminMenu = [
     { name: "Dashboard", icon: <FaChartBar className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-100" },
@@ -110,7 +121,7 @@ const DashboardLayout = ({ children }) => {
   ];
 
   // Choose menu based on role
-  const menuItems = userRole === "admin" ? adminMenu : staffMenu;
+  const menuItems = userRole === "admin" ? adminMenu : (userRole === "student" ? studentMenu : staffMenu);
 
   const handleMenuClick = (href) => {
     navigate(href);
