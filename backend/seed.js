@@ -4,6 +4,7 @@ const Users = require("./src/models/Users");
 const NfcCardInfo = require("./src/models/NfcCardInfo");
 const Reader = require("./src/models/Reader");
 const Department = require("./src/models/Department");
+const RolePermission = require("./src/models/RolePermission");
 const { ROLES, STATUS } = require("./src/config/constants");
 const bcrypt = require("bcryptjs");
 
@@ -136,7 +137,48 @@ const seedData = async () => {
   await Users.findByIdAndUpdate(createdUsers[2]._id, { uid: "0455667788", accessLevel: 1 });
   console.log("Users updated with card UIDs.");
 
-  // 4. Seed Readers
+  // 4. Seed Role Permissions
+  const rolePermissions = [
+    {
+      role: "admin",
+      allowedAreas: [], // Admin has access to all areas
+      updatedBy: null,
+      updatedAt: new Date(),
+    },
+    {
+      role: "staff",
+      allowedAreas: [
+        "library",
+        "cafeteria",
+        "medical-centre",
+        "student-affairs",
+        "dept-admin-office",
+        "registry-office",
+        "bursary-office",
+        "hr-office",
+        "staff-meeting-room",
+        "senate-building",
+        "academic-planning",
+      ],
+      updatedBy: null,
+      updatedAt: new Date(),
+    },
+    {
+      role: "student",
+      allowedAreas: [
+        "library",
+        "cafeteria",
+        "medical-centre",
+        "student-affairs",
+      ],
+      updatedBy: null,
+      updatedAt: new Date(),
+    },
+  ];
+  await RolePermission.insertMany(rolePermissions);
+  console.log("Role permissions seeded.");
+
+  // 5. Seed Readers
   const readers = [
     { readerId: "MAIN_GATE_01", location: "Campus Entrance", direction: "in", isActive: true },
     { readerId: "LAB_01", location: "Science Building", direction: "in", isActive: true },

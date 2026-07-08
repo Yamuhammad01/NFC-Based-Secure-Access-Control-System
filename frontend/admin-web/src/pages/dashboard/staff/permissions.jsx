@@ -13,12 +13,26 @@ const StaffPermissions = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [logsLoading, setLogsLoading] = useState(false);
+  const [permissions, setPermissions] = useState([]);
 
   const fetchProfileDetails = async () => {
     try {
       setLogsLoading(true);
       const profileData = await getProfile();
       setProfile(profileData);
+      
+      // Fetch permissions from API
+      const token = localStorage.getItem("authToken");
+      const userId = profileData._id || profileData.id;
+      const permResponse = await fetch(`http://localhost:5000/api/permissions/user/${userId}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      if (permResponse.ok) {
+        const permData = await permResponse.json();
+        setPermissions(permData.effectivePermissions || []);
+      }
     } catch (error) {
       console.warn("Could not load backend profile, defaulting to standard mock credentials:", error);
       setProfile({
@@ -99,8 +113,9 @@ const StaffPermissions = () => {
 
         {/* ACCESS MATRIX */}
         <AccessMatrix 
-          userRole="staff"
+          userRole={profile?.role || "staff"}
           accessLevel={accessLevel}
+          permissions={permissions}
           onRequestAccess={handleRequestAccess}
         />
 

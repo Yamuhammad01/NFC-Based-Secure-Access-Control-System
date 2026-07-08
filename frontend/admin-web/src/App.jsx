@@ -15,6 +15,7 @@ import Settings from './pages/dashboard/staff/settings';
 import UsersPage from './pages/dashboard/admin/Users';
 import EmployeeTable from './pages/dashboard/admin/employees';
 import CardManagement from './pages/dashboard/admin/cards';
+import RolePermissions from './pages/dashboard/admin/RolePermissions';
 
 // Generic staff/student pages
 import StaffPermissions from './pages/dashboard/staff/permissions';
@@ -67,6 +68,7 @@ function App() {
         <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />
         <Route path="/dashboard/admin/cards" element={<CardManagement />} />
         <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />
+        <Route path="/dashboard/admin/role-permissions" element={<RolePermissions />} />
 
         {/* ── Generic dashboard routes (role-agnostic) ── */}
         <Route path="/dashboard/profile"       element={<StaffProfile />} />

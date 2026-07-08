@@ -1,8 +1,11 @@
 const Users = require("../models/Users");
 const NfcCardInfo = require("../models/NfcCardInfo");
 const AdminAuditLog = require("../models/AdminAuditLog");
+const RolePermission = require("../models/RolePermission");
+const UserPermission = require("../models/UserPermission");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
+const ACCESS_AREAS_DEFAULTS = require("../config/roleDefaults");
 
 // Helper to generate temporary password for new users
 function generateTempPassword() {

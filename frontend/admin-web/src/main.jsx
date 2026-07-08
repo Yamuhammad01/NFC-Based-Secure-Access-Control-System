@@ -14,6 +14,7 @@ import UsersPage from './pages/dashboard/admin/Users'
 import DashboardOverview from './pages/dashboard/admin/DashboardOverview';
 import AuditLogs from './pages/dashboard/admin/auditLogs'
 import CardManagement from './pages/dashboard/admin/cards'
+import RolePermissions from './pages/dashboard/admin/RolePermissions';
 //import BusinessCard from './pages/dashboard/staff/BusinessCard'
 import StaffId from './pages/dashboard/staff/staffId'
 import StaffProfile from './pages/dashboard/staff/Profile'
@@ -70,6 +71,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />
         <Route path="/dashboard/admin/cards" element={<CardManagement />} />
         <Route path="/dashboard/admin/audit-logs" element={<AuditLogs />} />
+        <Route path="/dashboard/admin/role-permissions" element={<RolePermissions />} />
 
         {/* ── Generic dashboard routes (role-agnostic) ── */}
         <Route path="/dashboard/profile"       element={<StaffProfile />} />

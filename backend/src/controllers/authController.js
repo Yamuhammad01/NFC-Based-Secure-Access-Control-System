@@ -3,6 +3,8 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const Users = require("../models/Users");
 const AdminAuditLog = require("../models/AdminAuditLog");
+const RolePermission = require("../models/RolePermission");
+const UserPermission = require("../models/UserPermission");
 
 // Helper to sign JWT
 const generateToken = (user) => {
@@ -76,6 +78,10 @@ exports.register = async (req, res) => {
 
     const token = generateToken(newUser);
 
+    // Get permissions for the new user
+    const rolePerm = await RolePermission.findOne({ role: newUser.role });
+    const allowedAreas = rolePerm ? rolePerm.allowedAreas : [];
+
     res.status(201).json({
       access_token: token,
       message: "Registration successful",
@@ -89,6 +95,7 @@ exports.register = async (req, res) => {
         firstName: newUser.firstName,
         lastName: newUser.lastName,
         mustChangePassword: newUser.mustChangePassword,
+        permissions: allowedAreas,
       },
     });
   } catch (error) {
@@ -144,6 +151,18 @@ exports.login = async (req, res) => {
 
     const token = generateToken(user);
 
+    // Get effective permissions for the user
+    const rolePerm = await RolePermission.findOne({ role: user.role });
+    const userPerm = await UserPermission.findOne({ userRef: user._id });
+    
+    let permissions = [];
+    if (user.role !== "admin") {
+      let baseAllowed = rolePerm ? [...rolePerm.allowedAreas] : [];
+      let extraAllowed = userPerm ? [...userPerm.allowedAreas] : [];
+      let revoked = userPerm ? [...userPerm.revokedAreas] : [];
+      permissions = [...new Set([...baseAllowed, ...extraAllowed])].filter(a => !revoked.includes(a));
+    }
+
     res.status(200).json({
       access_token: token,
       message: "Login successful",
@@ -165,6 +184,7 @@ exports.login = async (req, res) => {
         position: user.position,
         status: user.status,
         mustChangePassword: user.mustChangePassword,
+        permissions,
       },
     });
   } catch (error) {

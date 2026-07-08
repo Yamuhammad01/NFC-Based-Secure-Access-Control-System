@@ -17,13 +17,18 @@ const AccessMatrix = ({
   userRole = "staff", 
   accessLevel = 1,
   loading = false,
-  onRequestAccess 
+  onRequestAccess,
+  permissions = []
 }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
   // Determine if user has access to a specific area
   const hasAccess = (area) => {
     if (userRole === "admin") return true;
+    if (permissions.length > 0) {
+      return permissions.includes(area.id);
+    }
+    // Fallback to static config if no permissions provided
     if (userRole === "staff") return area.staffAccess;
     if (userRole === "student") return area.studentAccess;
     return false;

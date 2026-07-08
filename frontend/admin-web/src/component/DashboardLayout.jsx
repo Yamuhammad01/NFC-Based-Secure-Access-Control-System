@@ -116,6 +116,7 @@ const DashboardLayout = ({ children }) => {
   const adminMenu = [
     { name: "Dashboard", icon: <FaChartBar className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-100" },
     { name: "User Management", icon: <FaUsers className="text-blue-600" />, href: "/dashboard/admin/users", bg: "bg-blue-100" },
+    { name: "Role Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/admin/role-permissions", bg: "bg-rose-100" },
     { name: "Card Management", icon: <FaIdCard className="text-emerald-600" />, href: "/dashboard/admin/cards", bg: "bg-emerald-100" },
     { name: "Audit Logs", icon: <FaHistory className="text-amber-600" />, href: "/dashboard/admin/audit-logs", bg: "bg-amber-100" },
   ];
