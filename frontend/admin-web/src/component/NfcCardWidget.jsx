@@ -13,8 +13,8 @@ import {
 const NfcCardWidget = ({ 
   uid = "04AA92FB2233", 
   status = "active", 
-  issuedDate = "12 Jan 2026", 
-  expiryDate = "12 Jan 2030",
+  issuedDate = new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }), 
+  expiryDate = (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 4); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); })(),
   accessLevel = 2
 }) => {
   const [copied, setCopied] = useState(false);

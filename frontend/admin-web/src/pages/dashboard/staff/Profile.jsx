@@ -205,7 +205,7 @@ const StaffProfile = () => {
                   </span>
                 </div>
                 <p className="text-indigo-200 font-medium text-sm sm:text-base mb-3">
-                  {profile.position} &bull; <span className="text-gray-300">{profile.department}</span>
+                   <span className="text-gray-300">{profile.department}</span>
                 </p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs text-gray-400 font-semibold">
                   <div className="flex items-center justify-center sm:justify-start gap-2">
@@ -247,8 +247,8 @@ const StaffProfile = () => {
             <NfcCardWidget 
               uid={profile.uid}
               status={profile.status}
-              issuedDate="12 Jan 2026"
-              expiryDate="12 Jan 2030"
+              issuedDate={profile.issuedDate || new Date().toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}
+              expiryDate={profile.expiryDate || (() => { const d = new Date(); d.setFullYear(d.getFullYear() + 4); return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }); })()}
               accessLevel={profile.accessLevel}
             />
           </div>
