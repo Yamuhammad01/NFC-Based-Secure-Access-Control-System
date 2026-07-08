@@ -7,6 +7,7 @@ import LoginForm from './pages/Auth/login'
 import Register from './pages/Auth/register'
 import ForgotPassword from './pages/Auth/forgotPassword'
 import ResetPassword from './pages/Auth/resetPassword'
+import ForcePasswordChange from './pages/Auth/forcePasswordChange'
 // import AdminDashboard from '../AdminDashboard'
 import EmployeeTable from './pages/dashboard/admin/employees'
 import UsersPage from './pages/dashboard/admin/Users'
@@ -61,6 +62,7 @@ createRoot(document.getElementById('root')).render(
         <Route path="/register" element={<Register />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
+        <Route path="/force-password-change" element={<ForcePasswordChange />} />
         <Route path="/dashboard/admin" element={<DashboardOverview />} />
         <Route path="/dashboard/admin/users" element={<UsersPage />} />
         <Route path="/dashboard/admin/employees" element={<EmployeeTable />} />

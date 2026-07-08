@@ -49,10 +49,12 @@ const UsersPage = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [showViewModal, setShowViewModal] = useState(false);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
 
   // Active records for modals
   const [selectedUser, setSelectedUser] = useState(null);
   const [userToDelete, setUserToDelete] = useState(null);
+  const [registrationDetails, setRegistrationDetails] = useState(null);
 
   // Form states
   const [formData, setFormData] = useState({
@@ -183,15 +185,14 @@ const UsersPage = () => {
         profilePhoto: "",
       });
 
-      // If a temporary password was returned, show a custom notification dialog
+      // If a temporary password was returned, show modal with credentials
       if (res.tempPassword) {
-        alert(
-          `User registered successfully!\n\n` +
-          `TEMP LOGIN CREDENTIALS:\n` +
-          `Email: ${formData.email}\n` +
-          `Temporary Password: ${res.tempPassword}\n\n` +
-          `Please share this password with the user. They will be forced to change it on their first login.`
-        );
+        setRegistrationDetails({
+          email: formData.email,
+          tempPassword: res.tempPassword,
+          name: formData.name
+        });
+        setShowSuccessModal(true);
       }
 
     } catch (err) {
@@ -1260,6 +1261,78 @@ const UsersPage = () => {
                 ) : (
                   "Yes, Delete"
                 )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────── */}
+      {/* 5. REGISTRATION SUCCESS MODAL (Temporary Credentials)     */}
+      {/* ────────────────────────────────────────────────────────── */}
+      {showSuccessModal && registrationDetails && (
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm">
+          <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md overflow-hidden animate-[fadeIn_0.2s_ease-out]">
+            {/* Header */}
+            <div className="bg-gradient-to-r from-emerald-600 to-teal-600 px-6 py-5 text-white">
+              <div className="flex items-center gap-3">
+                <div className="w-12 h-12 bg-white/15 rounded-xl flex items-center justify-center">
+                  <FaCheckCircle className="text-white text-2xl" />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-lg">User Registered Successfully</h3>
+                  <p className="text-emerald-50 text-xs">Temporary login credentials have been generated</p>
+                </div>
+              </div>
+            </div>
+
+            {/* Body */}
+            <div className="px-6 py-6 space-y-5">
+              {/* Success message */}
+              <div className="flex items-start gap-3 bg-emerald-50 border border-emerald-200 rounded-2xl p-4">
+                <FaCheckCircle className="text-emerald-500 flex-shrink-0 mt-0.5" />
+                <p className="text-xs text-emerald-800 font-semibold leading-relaxed">
+                  The user <span className="font-bold">{registrationDetails.name}</span> has been registered. 
+                  Please share these temporary credentials with them. They will be forced to change the password on first login.
+                </p>
+              </div>
+
+              {/* Credentials display */}
+              <div className="space-y-3">
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">
+                    Email Address
+                  </label>
+                  <p className="text-sm font-bold text-slate-800 font-mono break-all">{registrationDetails.email}</p>
+                </div>
+
+                <div className="bg-slate-50 border border-slate-200 rounded-xl p-4">
+                  <label className="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1.5 block">
+                    Temporary Password
+                  </label>
+                  <p className="text-sm font-bold text-slate-800 font-mono break-all select-all">{registrationDetails.tempPassword}</p>
+                </div>
+              </div>
+
+              {/* Security note */}
+              <div className="flex items-start gap-2.5 bg-amber-50 border border-amber-200 rounded-xl p-3.5">
+                <FaExclamationTriangle className="text-amber-500 flex-shrink-0 mt-0.5" size={13} />
+                <p className="text-[11px] text-amber-800 font-semibold leading-relaxed">
+                  This is a temporary password. The user must change it immediately upon first login for security purposes.
+                </p>
+              </div>
+            </div>
+
+            {/* Footer */}
+            <div className="px-6 pb-6">
+              <button
+                onClick={() => {
+                  setShowSuccessModal(false);
+                  setRegistrationDetails(null);
+                }}
+                className="w-full py-3 px-4 bg-emerald-600 hover:bg-emerald-700 text-white font-extrabold rounded-xl transition-colors text-sm shadow-md shadow-emerald-600/25"
+              >
+                Done
               </button>
             </div>
           </div>

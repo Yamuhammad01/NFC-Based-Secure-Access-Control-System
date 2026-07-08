@@ -27,7 +27,7 @@ export default function LoginForm() {
     setError('')
     
     try {
-      // Step 1: Login with credentials
+      //Login with credentials
       const response = await login(formData.email, formData.password)
       console.log('Login successful:', response)
 
@@ -37,13 +37,13 @@ export default function LoginForm() {
 
       localStorage.setItem("authToken", token)
 
-      // Step 2: Get role from response (to avoid extra API call)
+      //  Get role from response (to avoid extra API call)
       const userRole = response?.user?.role?.toLowerCase() || "staff"
       console.log("User role from response:", userRole)
 
-      // Step 3: Check if user must change their temporary password
+      //  Check if user must change their temporary password
       // Only staff and students are forced to change password, not admins
-      if (response.mustChangePassword === true && userRole !== "admin") {
+       if (response.mustChangePassword === true && userRole !== "admin") {
         // Redirect to force password change page
         localStorage.setItem("userRole", userRole)
         navigate("/force-password-change")

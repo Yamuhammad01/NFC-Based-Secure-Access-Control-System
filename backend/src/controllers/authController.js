@@ -8,7 +8,7 @@ const AdminAuditLog = require("../models/AdminAuditLog");
 const generateToken = (user) => {
   return jwt.sign(
     { userId: user._id, email: user.email, role: user.role },
-    process.env.JWT_SECRET || "your_jwt_secret_key_change_in_production",
+    process.env.JWT_SECRET,
     { expiresIn: "7d" }
   );
 };
