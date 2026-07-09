@@ -20,6 +20,7 @@ const profileRoutes = require("./routes/profileRoutes");
 const scanRoutes = require("./routes/scanRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
+const temporaryAccessRoutes = require("./routes/temporaryAccessRoutes");
 
 
 const app = express();
@@ -55,6 +56,7 @@ app.use("/api", profileRoutes);
 app.use("/api/scan", scanRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/permissions", permissionRoutes);
+app.use("/api/temp-access", temporaryAccessRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

@@ -16,16 +16,11 @@ import {
 } from "react-icons/fa";
 import { MdOutlineSensors } from "react-icons/md";
 import { getProfile } from "../../../Api/authService";
-
-// ─── Storage key ──────────────────────────────────────────────────────────────
-const STORAGE_KEY = "tempAccessRequests";
-
-const loadRequests = () => {
-  try { return JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]"); }
-  catch { return []; }
-};
-const saveRequests = (list) =>
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
+import {
+  submitTempAccessRequest,
+  getMyTempAccessRequests,
+  cancelTempAccessRequest,
+} from "../../../Api/tempAccessService";
 
 // ─── Static data ──────────────────────────────────────────────────────────────
 const AREAS = [
@@ -152,6 +147,18 @@ const TempAccessRequest = () => {
   const [duration, setDuration] = useState("");
   const [errors, setErrors]     = useState({});
 
+  // Fetch requests from backend
+  const fetchRequests = async () => {
+    try {
+      const result = await getMyTempAccessRequests();
+      if (result.status === "success") {
+        setRequests(result.data);
+      }
+    } catch (error) {
+      console.error("Failed to fetch requests:", error);
+    }
+  };
+
   useEffect(() => {
     const init = async () => {
       try {
@@ -160,7 +167,7 @@ const TempAccessRequest = () => {
       } catch {
         setProfile({ staffId: "ST2026001", firstName: "John", lastName: "Doe", department: "Registry" });
       }
-      setRequests(loadRequests());
+      await fetchRequests();
       setLoading(false);
     };
     init();
@@ -183,34 +190,39 @@ const TempAccessRequest = () => {
     if (!validate()) return;
 
     setSubmitting(true);
-    await new Promise((r) => setTimeout(r, 900)); // simulate API
 
-    const ticket = `TAR-${Date.now().toString(36).toUpperCase()}`;
-    const newReq = {
-      ticketId:    ticket,
-      area,
-      reason,
-      duration:    DURATIONS.find((d) => d.value === duration)?.label || duration,
-      submittedAt: new Date().toISOString(),
-      status:      "pending",
-      staffId:     profile?.staffId || "N/A",
-    };
+    try {
+      const result = await submitTempAccessRequest({
+        area,
+        reason,
+        duration,
+      });
 
-    const updated = [newReq, ...requests];
-    setRequests(updated);
-    saveRequests(updated);
-    setLastTicket(ticket);
-    setSubmitting(false);
-    setSubmitted(true);
-
-    // Reset form
-    setArea(""); setReason(""); setDuration(""); setErrors({});
+      if (result.status === "success") {
+        setLastTicket(result.data.ticketId);
+        setSubmitted(true);
+        await fetchRequests(); // Refresh the list
+      } else {
+        alert(result.message || "Failed to submit request");
+      }
+    } catch (error) {
+      console.error("Failed to submit request:", error);
+      alert("Failed to submit request. Please try again.");
+    } finally {
+      setSubmitting(false);
+      // Reset form
+      setArea(""); setReason(""); setDuration(""); setErrors({});
+    }
   };
 
-  const handleCancel = (ticketId) => {
-    const updated = requests.filter((r) => r.ticketId !== ticketId);
-    setRequests(updated);
-    saveRequests(updated);
+  const handleCancel = async (ticketId) => {
+    try {
+      await cancelTempAccessRequest(ticketId);
+      await fetchRequests(); // Refresh the list
+    } catch (error) {
+      console.error("Failed to cancel request:", error);
+      alert("Failed to cancel request. Please try again.");
+    }
   };
 
   const closeDrawer = () => {
