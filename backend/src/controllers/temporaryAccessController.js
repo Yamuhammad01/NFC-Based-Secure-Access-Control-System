@@ -141,7 +141,7 @@ exports.getRequestById = async (req, res) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
-    const request = await TemporaryAccess.findById(id);
+    const request = await TemporaryAccess.findOne({ ticketId: id });
     
     if (!request) {
       return res.status(404).json({ status: "error", message: "Request not found" });
@@ -177,7 +177,7 @@ exports.cancelRequest = async (req, res) => {
     const userId = req.user?.userId;
     const { id } = req.params;
 
-    const request = await TemporaryAccess.findById(id);
+    const request = await TemporaryAccess.findOne({ ticketId: id });
     
     if (!request) {
       return res.status(404).json({ status: "error", message: "Request not found" });
@@ -194,7 +194,7 @@ exports.cancelRequest = async (req, res) => {
       });
     }
 
-    await TemporaryAccess.findByIdAndDelete(id);
+    await TemporaryAccess.findOneAndDelete({ ticketId: id });
 
     res.status(200).json({
       status: "success",
@@ -224,7 +224,7 @@ exports.approveRequest = async (req, res) => {
       return res.status(403).json({ status: "error", message: "Forbidden - Admin only" });
     }
 
-    const request = await TemporaryAccess.findById(id);
+    const request = await TemporaryAccess.findOne({ ticketId: id });
     
     if (!request) {
       return res.status(404).json({ status: "error", message: "Request not found" });
@@ -278,7 +278,7 @@ exports.rejectRequest = async (req, res) => {
       return res.status(403).json({ status: "error", message: "Forbidden - Admin only" });
     }
 
-    const request = await TemporaryAccess.findById(id);
+    const request = await TemporaryAccess.findOne({ ticketId: id });
     
     if (!request) {
       return res.status(404).json({ status: "error", message: "Request not found" });

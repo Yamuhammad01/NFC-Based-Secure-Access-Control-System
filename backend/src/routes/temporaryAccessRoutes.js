@@ -9,6 +9,9 @@ router.use(authMiddleware);
 // POST /api/temp-access/request - Submit new request
 router.post("/request", temporaryAccessController.submitRequest);
 
+// GET /api/temp-access/requests/all - Get all requests (admin only)
+router.get("/requests/all", temporaryAccessController.getAllRequests);
+
 // GET /api/temp-access/requests - Get my requests
 router.get("/requests", temporaryAccessController.getMyRequests);
 
@@ -23,8 +26,5 @@ router.put("/requests/:id/approve", temporaryAccessController.approveRequest);
 
 // PUT /api/temp-access/requests/:id/reject - Reject request (admin only)
 router.put("/requests/:id/reject", temporaryAccessController.rejectRequest);
-
-// GET /api/temp-access/requests/all - Get all requests (admin only)
-router.get("/requests/all", temporaryAccessController.getAllRequests);
 
 module.exports = router;
