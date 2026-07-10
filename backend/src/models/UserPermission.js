@@ -1,5 +1,14 @@
 const mongoose = require("mongoose");
 
+const tempAreaSchema = new mongoose.Schema(
+  {
+    areaId: { type: String, required: true },
+    grantedAt: { type: Date, default: Date.now },
+    expiresAt: { type: Date, required: true },
+  },
+  { _id: false }
+);
+
 const userPermissionSchema = new mongoose.Schema(
   {
     userRef: {
@@ -18,6 +27,7 @@ const userPermissionSchema = new mongoose.Schema(
         type: String,
       },
     ],
+    tempAreas: [tempAreaSchema],
     updatedBy: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Users",

@@ -19,8 +19,21 @@ async function getEffectivePermissions(userRole, userId) {
   let extraAllowed = userPerm ? [...userPerm.allowedAreas] : [];
   let revoked = userPerm ? [...userPerm.revokedAreas] : [];
 
-  // Combine: base + extra - revoked
-  const effective = [...new Set([...baseAllowed, ...extraAllowed])].filter(
+  // Get temp areas (time-based), filtering out expired ones
+  const now = new Date();
+  const tempAreas = userPerm ? userPerm.tempAreas.filter((t) => t.expiresAt > now).map((t) => t.areaId) : [];
+
+  // Remove expired temp areas from the database
+  if (userPerm && userPerm.tempAreas && userPerm.tempAreas.length > 0) {
+    const expiredCount = userPerm.tempAreas.filter((t) => t.expiresAt <= now).length;
+    if (expiredCount > 0) {
+      userPerm.tempAreas = userPerm.tempAreas.filter((t) => t.expiresAt > now);
+      await userPerm.save();
+    }
+  }
+
+  // Combine: base + extra + temp - revoked
+  const effective = [...new Set([...baseAllowed, ...extraAllowed, ...tempAreas])].filter(
     (area) => !revoked.includes(area)
   );
 

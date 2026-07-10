@@ -2,6 +2,8 @@ const NfcCardInfo = require("../models/NfcCardInfo");
 const Users = require("../models/Users");
 const Reader = require("../models/Reader");
 const AccessLog = require("../models/AccessLog");
+const RolePermission = require("../models/RolePermission");
+const UserPermission = require("../models/UserPermission");
 const { ACCESS_RESULT } = require("../config/constants");
 
 /**
@@ -36,10 +38,14 @@ exports.tap = async (req, res) => {
       return logAndDeny(res, { uid, readerId, door, reader, card }, "Card Suspended", "Access temporarily suspended");
     }
 
-    // 4. RBAC (Access Levels)
-    const requiredLevel = getRequiredLevel(door);
-    if (card.accessLevel < requiredLevel) {
-      return logAndDeny(res, { uid, readerId, door, reader, card }, "Insufficient Access Level", `Level ${requiredLevel} required for this area`);
+    // 4. RBAC - Check effective permissions (role defaults + user overrides + temp areas)
+    const effectivePermissions = await getEffectivePermissions(card.role, card.userRef);
+
+    // If effectivePermissions is empty array, user has access to all areas (admin)
+    const hasPermission = effectivePermissions.length === 0 || effectivePermissions.includes(door);
+
+    if (!hasPermission) {
+      return logAndDeny(res, { uid, readerId, door, reader, card }, "Insufficient Permissions", `Access denied. Your role (${card.role}) does not have permission for this area.`);
     }
 
     // 5. Success - Update Card State & Log
@@ -83,7 +89,47 @@ exports.tap = async (req, res) => {
 };
 
 /**
- * Helper: Map doors to access levels
+ * Helper: Get effective permissions for a user (same logic as permissionController)
+ * Combines role defaults + user overrides + temp areas - revoked areas
+ */
+async function getEffectivePermissions(userRole, userId) {
+  if (userRole === "admin") {
+    return []; // Admin has access to all areas (empty = all)
+  }
+
+  // Get role defaults
+  const rolePerm = await RolePermission.findOne({ role: userRole });
+  const ACCESS_AREAS_DEFAULTS = require("../config/roleDefaults");
+  let baseAllowed = rolePerm ? [...rolePerm.allowedAreas] : [...(ACCESS_AREAS_DEFAULTS[userRole] || [])];
+
+  // Get user overrides
+  const userPerm = await UserPermission.findOne({ userRef: userId });
+  let extraAllowed = userPerm ? [...userPerm.allowedAreas] : [];
+  let revoked = userPerm ? [...userPerm.revokedAreas] : [];
+
+  // Get temp areas (time-based), filtering out expired ones
+  const now = new Date();
+  const tempAreas = userPerm ? userPerm.tempAreas.filter((t) => t.expiresAt > now).map((t) => t.areaId) : [];
+
+  // Remove expired temp areas from the database
+  if (userPerm && userPerm.tempAreas && userPerm.tempAreas.length > 0) {
+    const expiredCount = userPerm.tempAreas.filter((t) => t.expiresAt <= now).length;
+    if (expiredCount > 0) {
+      userPerm.tempAreas = userPerm.tempAreas.filter((t) => t.expiresAt > now);
+      await userPerm.save();
+    }
+  }
+
+  // Combine: base + extra + temp - revoked
+  const effective = [...new Set([...baseAllowed, ...extraAllowed, ...tempAreas])].filter(
+    (area) => !revoked.includes(area)
+  );
+
+  return effective;
+}
+
+/**
+ * Helper: Map doors to access levels (kept for backward compatibility)
  */
 function getRequiredLevel(door) {
   const mapping = {

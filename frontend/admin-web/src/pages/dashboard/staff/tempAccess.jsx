@@ -21,20 +21,7 @@ import {
   getMyTempAccessRequests,
   cancelTempAccessRequest,
 } from "../../../Api/tempAccessService";
-
-// ─── Static data ──────────────────────────────────────────────────────────────
-const AREAS = [
-  "Staff Office",
-  "Dean's Conference Room",
-  "Core IT Server Rooms",
-  "University Vault Complex",
-  "Academic Registry Suite",
-  "Faculty Research Laboratory",
-  "Main Administration Block",
-  "Finance & Accounts Office",
-  "Library Archives Section",
-  "Security Control Room",
-];
+import ACCESS_AREAS from "../../../config/accessAreas";
 
 const DURATIONS = [
   { label: "30 Minutes", value: "30min" },
@@ -147,6 +134,56 @@ const TempAccessRequest = () => {
   const [duration, setDuration] = useState("");
   const [errors, setErrors]     = useState({});
 
+  // ── Compute eligible areas based on user role and current permissions ──
+  const [eligibleAreas, setEligibleAreas] = useState([]);
+
+  const computeEligibleAreas = async (profileData) => {
+    try {
+      const role = profileData?.role || "staff";
+      const userId = profileData?._id || profileData?.id;
+
+      // Fetch user's effective permissions from the API
+      let effectivePerms = [];
+      if (userId) {
+        const token = localStorage.getItem("authToken");
+        const permResponse = await fetch(`http://localhost:5000/api/permissions/user/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (permResponse.ok) {
+          const permData = await permResponse.json();
+          effectivePerms = permData.effectivePermissions || [];
+        }
+      }
+
+      // Filter ACCESS_AREAS to only show areas the user is eligible to request
+      const eligible = ACCESS_AREAS.filter((area) => {
+        // Skip areas the user already has access to
+        if (effectivePerms.includes(area.id)) return false;
+
+        // Students: can request areas with studentRequestable=true or category="restricted"
+        if (role === "student") {
+          return area.studentRequestable === true || area.category === "restricted";
+        }
+
+        // Staff: can request areas with category="restricted"
+        if (role === "staff") {
+          return area.category === "restricted";
+        }
+
+        return false;
+      });
+
+      setEligibleAreas(eligible);
+    } catch (error) {
+      console.warn("Could not compute eligible areas, using defaults:", error);
+      // Fallback: show all restricted areas
+      const fallback = ACCESS_AREAS.filter(
+        (a) => a.category === "restricted"
+      );
+      setEligibleAreas(fallback);
+    }
+  };
+
   // Fetch requests from backend
   const fetchRequests = async () => {
     try {
@@ -164,8 +201,11 @@ const TempAccessRequest = () => {
       try {
         const p = await getProfile();
         setProfile(p);
+        await computeEligibleAreas(p);
       } catch {
-        setProfile({ staffId: "ST2026001", firstName: "John", lastName: "Doe", department: "Registry" });
+        const fallbackProfile = { staffId: "ST2026001", firstName: "John", lastName: "Doe", department: "Registry", role: "staff" };
+        setProfile(fallbackProfile);
+        await computeEligibleAreas(fallbackProfile);
       }
       await fetchRequests();
       setLoading(false);
@@ -426,10 +466,18 @@ const TempAccessRequest = () => {
                       className={`select select-bordered w-full bg-slate-50 text-slate-800 text-sm ${errors.area ? "border-rose-400 focus:border-rose-400" : "border-slate-200"}`}
                     >
                       <option value="">Select an area…</option>
-                      {AREAS.map((a) => (
-                        <option key={a} value={a}>{a}</option>
+                      {eligibleAreas.length === 0 && (
+                        <option value="" disabled>No areas available to request</option>
+                      )}
+                      {eligibleAreas.map((a) => (
+                        <option key={a.id} value={a.name}>{a.name}</option>
                       ))}
                     </select>
+                    {eligibleAreas.length > 0 && (
+                      <p className="text-[10px] text-slate-400 font-semibold mt-1">
+                        {eligibleAreas.length} area{eligibleAreas.length !== 1 ? "s" : ""} available to request
+                      </p>
+                    )}
                     {errors.area && (
                       <p className="text-[11px] text-rose-500 font-semibold flex items-center gap-1">
                         <FaTimes size={9} /> {errors.area}

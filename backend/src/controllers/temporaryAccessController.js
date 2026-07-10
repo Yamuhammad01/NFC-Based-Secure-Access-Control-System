@@ -249,6 +249,37 @@ exports.approveRequest = async (req, res) => {
 
     await request.save();
 
+    // ── Add area to user's temporary permissions ─────────────────────
+    // Generate area ID from the area name (consistent with how areas are stored)
+    const areaId = request.area.toLowerCase().replace(/\s+/g, "-");
+
+    // Upsert the user's permission record and add temp area
+    const UserPermission = require("../models/UserPermission");
+    let userPerm = await UserPermission.findOne({ userRef: request.userRef });
+    
+    if (!userPerm) {
+      userPerm = new UserPermission({
+        userRef: request.userRef,
+        allowedAreas: [],
+        revokedAreas: [],
+        tempAreas: [],
+      });
+    }
+
+    // Remove any existing temp entry for this area (to allow re-approval)
+    userPerm.tempAreas = userPerm.tempAreas.filter((t) => t.areaId !== areaId);
+
+    // Add the new temp area with expiry
+    userPerm.tempAreas.push({
+      areaId,
+      grantedAt: now,
+      expiresAt,
+    });
+
+    userPerm.updatedBy = userId;
+    userPerm.updatedAt = now;
+    await userPerm.save();
+
     res.status(200).json({
       status: "success",
       message: "Request approved successfully",
@@ -328,12 +359,22 @@ exports.getAllRequests = async (req, res) => {
     }
 
     const requests = await TemporaryAccess.find()
+      .populate("userRef", "name firstName lastName department email")
       .sort({ submittedAt: -1 })
       .lean();
 
+    // Map user data into the response for frontend convenience
+    const enriched = requests.map((r) => ({
+      ...r,
+      userName: r.userRef?.firstName || r.userRef?.name || "Unknown",
+      userLastName: r.userRef?.lastName || "",
+      userDepartment: r.userRef?.department || "",
+      userEmail: r.userRef?.email || "",
+    }));
+
     res.status(200).json({
       status: "success",
-      data: requests,
+      data: enriched,
     });
   } catch (error) {
     console.error("Error fetching all requests:", error);

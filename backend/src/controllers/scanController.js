@@ -2,7 +2,48 @@ const NfcCardInfo = require("../models/NfcCardInfo");
 const Users = require("../models/Users");
 const AccessLog = require("../models/AccessLog");
 const RolePermission = require("../models/RolePermission");
+const UserPermission = require("../models/UserPermission");
 const { ACCESS_RESULT, ROLES } = require("../config/constants");
+
+/**
+ * Helper: Get effective permissions for a user (same logic as permissionController)
+ * Combines role defaults + user overrides + temp areas - revoked areas
+ */
+async function getEffectivePermissions(userRole, userId) {
+  if (userRole === "admin") {
+    return []; // Admin has access to all areas (empty = all)
+  }
+
+  // Get role defaults
+  const rolePerm = await RolePermission.findOne({ role: userRole });
+  const ACCESS_AREAS_DEFAULTS = require("../config/roleDefaults");
+  let baseAllowed = rolePerm ? [...rolePerm.allowedAreas] : [...(ACCESS_AREAS_DEFAULTS[userRole] || [])];
+
+  // Get user overrides
+  const userPerm = await UserPermission.findOne({ userRef: userId });
+  let extraAllowed = userPerm ? [...userPerm.allowedAreas] : [];
+  let revoked = userPerm ? [...userPerm.revokedAreas] : [];
+
+  // Get temp areas (time-based), filtering out expired ones
+  const now = new Date();
+  const tempAreas = userPerm ? userPerm.tempAreas.filter((t) => t.expiresAt > now).map((t) => t.areaId) : [];
+
+  // Remove expired temp areas from the database
+  if (userPerm && userPerm.tempAreas && userPerm.tempAreas.length > 0) {
+    const expiredCount = userPerm.tempAreas.filter((t) => t.expiresAt <= now).length;
+    if (expiredCount > 0) {
+      userPerm.tempAreas = userPerm.tempAreas.filter((t) => t.expiresAt > now);
+      await userPerm.save();
+    }
+  }
+
+  // Combine: base + extra + temp - revoked
+  const effective = [...new Set([...baseAllowed, ...extraAllowed, ...tempAreas])].filter(
+    (area) => !revoked.includes(area)
+  );
+
+  return effective;
+}
 
 /**
  * POST /api/scan
@@ -51,15 +92,12 @@ exports.scan = async (req, res) => {
       });
     }
 
-    // 4. RBAC - Check role-based permission for the door
-    const rolePermission = await RolePermission.findOne({ role: card.role });
-    
-    // Handle special case: if allowedAreas is empty, grant access by default (e.g., admin role)
-    const hasPermission = rolePermission && (
-      rolePermission.allowedAreas.length === 0 || 
-      rolePermission.allowedAreas.includes(door)
-    );
-    
+    // 4. RBAC - Check effective permissions (role defaults + user overrides + temp areas)
+    const effectivePermissions = await getEffectivePermissions(card.role, card.userRef);
+
+    // If effectivePermissions is empty array, user has access to all areas (admin)
+    const hasPermission = effectivePermissions.length === 0 || effectivePermissions.includes(door);
+
     if (!hasPermission) {
       await AccessLog.create({
         uid: value,
@@ -109,4 +147,3 @@ exports.scan = async (req, res) => {
     });
   }
 };
-
