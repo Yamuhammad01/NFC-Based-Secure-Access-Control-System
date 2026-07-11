@@ -21,6 +21,7 @@ const scanRoutes = require("./routes/scanRoutes");
 const dashboardRoutes = require("./routes/dashboardRoutes");
 const permissionRoutes = require("./routes/permissionRoutes");
 const temporaryAccessRoutes = require("./routes/temporaryAccessRoutes");
+const notificationRoutes = require("./routes/notificationRoutes");
 
 
 const app = express();
@@ -57,6 +58,7 @@ app.use("/api/scan", scanRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/permissions", permissionRoutes);
 app.use("/api/temp-access", temporaryAccessRoutes);
+app.use("/api/notifications", notificationRoutes);
 
 // Health check
 app.get("/api/health", (req, res) => {

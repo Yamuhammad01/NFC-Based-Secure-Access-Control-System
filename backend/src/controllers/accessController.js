@@ -5,6 +5,7 @@ const AccessLog = require("../models/AccessLog");
 const RolePermission = require("../models/RolePermission");
 const UserPermission = require("../models/UserPermission");
 const { ACCESS_RESULT } = require("../config/constants");
+const notificationService = require("../services/notificationService");
 
 /**
  * Access Control Engine - Tap Endpoint
@@ -74,6 +75,22 @@ exports.tap = async (req, res) => {
       result: ACCESS_RESULT.GRANTED,
       timestamp: new Date()
     });
+
+    // Create notification for granted access
+    try {
+      await notificationService.createNotification({
+        uid,
+        type: "card_used",
+        severity: "info",
+        title: `Card Used at ${door}`,
+        message: `Your NFC card was successfully scanned at ${door} (${readerId}). Access granted.`,
+        location: door,
+        readerId,
+        eventTimestamp: new Date(),
+      });
+    } catch (notifErr) {
+      console.error("Failed to create notification:", notifErr.message);
+    }
 
     return res.status(200).json({
       status: "granted",
@@ -175,6 +192,24 @@ async function logAndDeny(res, context, reason, message) {
     reason,
     timestamp: new Date()
   });
+
+  // Create notification for denied access
+  try {
+    const severity = reason === "Insufficient Permissions" ? "danger" : "warning";
+    const type = severity === "danger" ? "unauthorized" : "suspicious";
+    await notificationService.createNotification({
+      uid,
+      type,
+      severity,
+      title: severity === "danger" ? "Unauthorized Access Attempt Detected" : "Access Request Denied",
+      message: `An access attempt was made at ${door} but was denied. Reason: ${reason || "No specific reason provided."}`,
+      location: door,
+      readerId,
+      eventTimestamp: new Date(),
+    });
+  } catch (notifErr) {
+    console.error("Failed to create notification:", notifErr.message);
+  }
 
   return res.status(403).json({
     status: "denied",

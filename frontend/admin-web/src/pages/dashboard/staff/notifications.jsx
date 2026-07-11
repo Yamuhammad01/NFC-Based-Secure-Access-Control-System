@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import DashboardLayout from "../../../component/DashboardLayout";
 import {
   FaBell,
@@ -15,6 +15,11 @@ import {
   FaClock,
 } from "react-icons/fa";
 import { MdOutlineSensors } from "react-icons/md";
+import {
+  getNotifications,
+  dismissNotification,
+  dismissAllNotifications,
+} from "../../../Api/notificationService";
 
 // ─── Storage key ──────────────────────────────────────────────────────────────
 const READ_KEY = "securityNotifications_read";
@@ -26,7 +31,7 @@ const loadRead = () => {
 const saveRead = (set) =>
   localStorage.setItem(READ_KEY, JSON.stringify([...set]));
 
-// ─── Mock notification dataset ─────────────────────────────────────────────────
+// ─── Fallback mock dataset ────────────────────────────────────────────────────
 const MOCK_NOTIFICATIONS = [
   {
     id: "notif-1",
@@ -243,13 +248,31 @@ const NotificationCard = ({ notif, isRead, onMarkRead, onDismiss }) => {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 const SecurityNotifications = () => {
-  const [notifications, setNotifications]   = useState(MOCK_NOTIFICATIONS);
+  const [notifications, setNotifications]   = useState([]);
   const [readIds, setReadIds]               = useState(new Set());
   const [filter, setFilter]                 = useState("all");
   const [refreshing, setRefreshing]         = useState(false);
 
   // Load persisted read state
   useEffect(() => { setReadIds(loadRead()); }, []);
+
+  // Fetch notifications from API
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const data = await getNotifications({ filter: "all", limit: 100 });
+      if (data && data.notifications) {
+        setNotifications(data.notifications);
+      }
+    } catch (error) {
+      console.warn("API unavailable, falling back to mock data.", error.message);
+      setNotifications(MOCK_NOTIFICATIONS);
+    }
+  }, []);
+
+  // Initial fetch
+  useEffect(() => {
+    fetchNotifications();
+  }, [fetchNotifications]);
 
   const unreadCount = notifications.filter((n) => !readIds.has(n.id)).length;
 
@@ -259,26 +282,36 @@ const SecurityNotifications = () => {
     saveRead(next);
   };
 
-  const markAllRead = () => {
+  const markAllRead = async () => {
     const next = new Set(notifications.map((n) => n.id));
     setReadIds(next);
     saveRead(next);
+    // Also dismiss on the backend
+    try {
+      await dismissAllNotifications();
+    } catch (error) {
+      console.warn("Failed to dismiss all on backend.", error.message);
+    }
   };
 
-  const dismiss = (id) => {
+  const dismiss = async (id) => {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
     const next = new Set(readIds);
     next.delete(id);
     setReadIds(next);
     saveRead(next);
+    // Also dismiss on the backend
+    try {
+      await dismissNotification(id);
+    } catch (error) {
+      console.warn(`Failed to dismiss notification ${id} on backend.`, error.message);
+    }
   };
 
-  const handleRefresh = () => {
+  const handleRefresh = async () => {
     setRefreshing(true);
-    setTimeout(() => {
-      setNotifications(MOCK_NOTIFICATIONS);
-      setRefreshing(false);
-    }, 700);
+    await fetchNotifications();
+    setRefreshing(false);
   };
 
   // Filter displayed notifications

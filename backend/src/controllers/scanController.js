@@ -4,6 +4,7 @@ const AccessLog = require("../models/AccessLog");
 const RolePermission = require("../models/RolePermission");
 const UserPermission = require("../models/UserPermission");
 const { ACCESS_RESULT, ROLES } = require("../config/constants");
+const notificationService = require("../services/notificationService");
 
 /**
  * Helper: Get effective permissions for a user (same logic as permissionController)
@@ -111,6 +112,22 @@ exports.scan = async (req, res) => {
         timestamp: new Date()
       });
 
+      // Create notification for denied access
+      try {
+        await notificationService.createNotification({
+          uid: value,
+          type: "unauthorized",
+          severity: "danger",
+          title: "Unauthorized Access Attempt Detected",
+          message: `An access attempt was made at ${door || "unknown area"} using your card but was denied due to insufficient permissions.`,
+          location: door || "unknown",
+          readerId: "QR_SCANNER",
+          eventTimestamp: new Date(),
+        });
+      } catch (notifErr) {
+        console.error("Failed to create notification:", notifErr.message);
+      }
+
       return res.status(403).json({
         status: "denied",
         message: `Access denied. Your role (${card.role}) does not have permission for this area.`,
@@ -130,6 +147,22 @@ exports.scan = async (req, res) => {
       result: ACCESS_RESULT.GRANTED,
       timestamp: new Date()
     });
+
+    // Create notification for granted access
+    try {
+      await notificationService.createNotification({
+        uid: value,
+        type: "card_used",
+        severity: "info",
+        title: `Card Used at ${door || "unknown area"}`,
+        message: `Your NFC card was successfully scanned at ${door || "unknown area"} via QR scanner. Access granted.`,
+        location: door || "unknown",
+        readerId: "QR_SCANNER",
+        eventTimestamp: new Date(),
+      });
+    } catch (notifErr) {
+      console.error("Failed to create notification:", notifErr.message);
+    }
 
     return res.status(200).json({
       status: "granted",
