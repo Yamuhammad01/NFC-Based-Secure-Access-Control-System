@@ -176,7 +176,9 @@ exports.login = async (req, res) => {
         name: user.name,
         firstName: user.firstName,
         lastName: user.lastName,
-        profilePhoto: user.profilePhoto,
+        profilePhoto: user.profilePhoto
+          ? `${req.protocol}://${req.get("host")}${user.profilePhoto}`
+          : null,
         phone: user.phone,
         uid: user.uid,
         accessLevel: user.accessLevel,
@@ -337,7 +339,11 @@ exports.getMe = async (req, res) => {
     if (!user) {
       return res.status(404).json({ message: "User not found" });
     }
-    res.status(200).json(user);
+    const userObj = user.toObject();
+    if (userObj.profilePhoto) {
+      userObj.profilePhoto = `${req.protocol}://${req.get("host")}${userObj.profilePhoto}`;
+    }
+    res.status(200).json(userObj);
   } catch (error) {
     console.error("getMe error:", error);
     res.status(500).json({ message: "Internal server error" });

@@ -100,7 +100,7 @@ export const changePassword = async (currentPassword, newPassword) => {
 export const addProfilePhoto = async (photoFile) => {
   try {
     const formData = new FormData();
-    formData.append('Image', photoFile);
+    formData.append('profilePhoto', photoFile);
     
     const response = await api.post("/add/profilePhoto", formData, {
       headers: {

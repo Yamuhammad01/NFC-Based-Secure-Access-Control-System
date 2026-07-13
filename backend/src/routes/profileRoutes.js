@@ -1,9 +1,54 @@
 const express = require("express");
 const router = express.Router();
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const authenticate = require("../middlewares/auth");
 const Users = require("../models/Users");
 
-// GET /api/get/profile
+// ──────────────────────────────────────────────
+//  Multer Storage Configuration
+// ──────────────────────────────────────────────
+const uploadDir = path.join(__dirname, "..", "..", "uploads", "profile-photos");
+
+// Ensure the directory exists
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, uploadDir);
+  },
+  filename: (req, file, cb) => {
+    // Sanitize original name and prepend userId + timestamp
+    const ext = path.extname(file.originalname).toLowerCase();
+    const sanitized = file.originalname
+      .replace(ext, "")
+      .replace(/[^a-zA-Z0-9_-]/g, "")
+      .slice(0, 30);
+    cb(null, `user-${req.user.userId}-${Date.now()}-${sanitized}${ext}`);
+  },
+});
+
+const fileFilter = (req, file, cb) => {
+  const allowedTypes = ["image/jpeg", "image/png", "image/gif", "image/webp"];
+  if (allowedTypes.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Only JPEG, PNG, GIF, and WebP images are allowed"), false);
+  }
+};
+
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
+});
+
+// ──────────────────────────────────────────────
+//  GET /api/get/profile
+// ──────────────────────────────────────────────
 router.get("/get/profile", authenticate, async (req, res) => {
   try {
     const user = await Users.findById(req.user.userId).select("-password");
@@ -21,7 +66,9 @@ router.get("/get/profile", authenticate, async (req, res) => {
       department: user.department,
       role: user.role,
       phone: user.phone,
-      profilePhoto: user.profilePhoto || null,
+      profilePhoto: user.profilePhoto
+        ? `${req.protocol}://${req.get("host")}${user.profilePhoto}`
+        : null,
       jobTitle: user.jobTitle,
       position: user.position,
       uid: user.uid,
@@ -36,7 +83,9 @@ router.get("/get/profile", authenticate, async (req, res) => {
   }
 });
 
-// PUT /api/update/profile
+// ──────────────────────────────────────────────
+//  PUT /api/update/profile
+// ──────────────────────────────────────────────
 router.put("/update/profile", authenticate, async (req, res) => {
   try {
     const { email, phone, firstName, lastName } = req.body;
@@ -66,17 +115,57 @@ router.put("/update/profile", authenticate, async (req, res) => {
   }
 });
 
-// POST /api/add/profilePhoto
-router.post("/add/profilePhoto", authenticate, async (req, res) => {
-  try {
-    // For now, return mock success. In production, handle file upload to cloud storage.
-    res.status(200).json({
-      message: "Profile photo uploaded successfully",
-      photoUrl: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=200"
-    });
-  } catch (error) {
-    res.status(500).json({ message: "Internal server error" });
-  }
+// ──────────────────────────────────────────────
+//  POST /api/add/profilePhoto
+//  Upload & persist profile photo to disk, store URL in DB
+// ──────────────────────────────────────────────
+router.post("/add/profilePhoto", authenticate, (req, res) => {
+  upload.single("profilePhoto")(req, res, async (err) => {
+    // Handle multer errors
+    if (err instanceof multer.MulterError) {
+      if (err.code === "LIMIT_FILE_SIZE") {
+        return res.status(400).json({ message: "File too large. Maximum size is 5MB." });
+      }
+      return res.status(400).json({ message: err.message });
+    }
+    if (err) {
+      return res.status(400).json({ message: err.message });
+    }
+
+    try {
+      if (!req.file) {
+        return res.status(400).json({ message: "No file uploaded. Please select a profile photo." });
+      }
+
+      // Build the relative URL for the uploaded file
+      const photoUrl = `/uploads/profile-photos/${req.file.filename}`;
+
+      // Delete old photo if it exists (local file)
+      const currentUser = await Users.findById(req.user.userId);
+      if (currentUser && currentUser.profilePhoto) {
+        const oldPhotoPath = path.join(__dirname, "..", "..", currentUser.profilePhoto);
+        if (fs.existsSync(oldPhotoPath)) {
+          fs.unlinkSync(oldPhotoPath);
+        }
+      }
+
+      // Update user's profilePhoto in DB
+      await Users.findByIdAndUpdate(req.user.userId, { profilePhoto: photoUrl });
+
+      res.status(200).json({
+        message: "Profile photo uploaded successfully",
+        photoUrl,
+      });
+    } catch (error) {
+      console.error("profilePhoto upload error:", error);
+      // Clean up uploaded file on error
+      if (req.file) {
+        const filePath = path.join(uploadDir, req.file.filename);
+        if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+      }
+      res.status(500).json({ message: "Internal server error" });
+    }
+  });
 });
 
 module.exports = router;

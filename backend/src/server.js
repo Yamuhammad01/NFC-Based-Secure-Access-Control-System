@@ -5,6 +5,7 @@ const cors = require("cors");
 const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
+const path = require("path");
 
 const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
@@ -43,6 +44,9 @@ const limiter = rateLimit({
   message: { error: "Too many requests, please try again later." },
 });
 app.use("/api", limiter);
+
+// Serve uploaded files statically
+app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
 
 // ──────────────────────────────────────────────
 //  API Routes

@@ -52,6 +52,9 @@ router.get("/get/all-staff", authenticate, async (req, res) => {
     const mappedList = userList.map(u => {
       const obj = u.toObject();
       obj.id = u._id.toString();
+      if (obj.profilePhoto) {
+        obj.profilePhoto = `${req.protocol}://${req.get("host")}${obj.profilePhoto}`;
+      }
       return obj;
     });
     res.status(200).json(mappedList);
@@ -138,6 +141,9 @@ router.get("/getstaffby/:id", authenticate, async (req, res) => {
     }
     const userObj = user.toObject();
     userObj.id = user._id.toString();
+    if (userObj.profilePhoto) {
+      userObj.profilePhoto = `${req.protocol}://${req.get("host")}${userObj.profilePhoto}`;
+    }
     res.status(200).json(userObj);
   } catch (error) {
     res.status(500).json({ message: "Error fetching user", error: error.message });
@@ -169,6 +175,9 @@ router.put("/update/staff/:id", authenticate, async (req, res) => {
     }
     const userObj = updatedUser.toObject();
     userObj.id = updatedUser._id.toString();
+    if (userObj.profilePhoto) {
+      userObj.profilePhoto = `${req.protocol}://${req.get("host")}${userObj.profilePhoto}`;
+    }
     res.status(200).json({
       message: "Staff member updated successfully",
       staff: userObj

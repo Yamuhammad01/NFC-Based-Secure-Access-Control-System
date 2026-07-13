@@ -27,9 +27,16 @@ const auditLog = async (req, action, targetId, details = {}) => {
 };
 
 /** Maps a Mongoose card document to a plain object with a top-level `id`. */
-const toCardDTO = (doc) => {
+const normalizePhoto = (req, obj) => {
+  if (obj.userRef && obj.userRef.profilePhoto) {
+    obj.userRef.profilePhoto = `${req.protocol}://${req.get("host")}${obj.userRef.profilePhoto}`;
+  }
+};
+
+const toCardDTO = (req) => (doc) => {
   const obj = doc.toObject ? doc.toObject() : { ...doc };
   obj.id = doc._id ? doc._id.toString() : obj._id?.toString();
+  normalizePhoto(req, obj);
   return obj;
 };
 
@@ -42,7 +49,7 @@ exports.getAllCards = async (req, res) => {
       .populate("issuedBy", "name email")
       .populate("replacedCardRef", "uid");
 
-    res.status(200).json(cards.map(toCardDTO));
+    res.status(200).json(cards.map(toCardDTO(req)));
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch cards", error: error.message });
   }
@@ -52,7 +59,7 @@ exports.getAllCards = async (req, res) => {
 exports.getUnlinkedCards = async (req, res) => {
   try {
     const cards = await NfcCardInfo.find({ userRef: null }).sort({ createdAt: -1 });
-    res.status(200).json(cards.map(toCardDTO));
+    res.status(200).json(cards.map(toCardDTO(req)));
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch unlinked cards", error: error.message });
   }
@@ -67,7 +74,7 @@ exports.getCardById = async (req, res) => {
       .populate("replacedCardRef", "uid");
 
     if (!card) return res.status(404).json({ message: "Card not found" });
-    res.status(200).json(toCardDTO(card));
+    res.status(200).json(toCardDTO(req)(card));
   } catch (error) {
     res.status(500).json({ message: "Failed to fetch card details", error: error.message });
   }
@@ -119,7 +126,7 @@ exports.createCard = async (req, res) => {
 
     await auditLog(req, "create_card", newCard._id, { uid: cleanUid, name, userRef });
 
-    res.status(201).json({ message: "Card registered successfully", card: toCardDTO(newCard) });
+    res.status(201).json({ message: "Card registered successfully", card: toCardDTO(req)(newCard) });
   } catch (error) {
     res.status(500).json({ message: "Failed to register card", error: error.message });
   }
@@ -139,7 +146,7 @@ exports.updateCard = async (req, res) => {
     if (!card) return res.status(404).json({ message: "Card not found" });
 
     await auditLog(req, "update_card", card._id, { uid: card.uid, changes: req.body });
-    res.status(200).json({ message: "Card updated successfully", card: toCardDTO(card) });
+    res.status(200).json({ message: "Card updated successfully", card: toCardDTO(req)(card) });
   } catch (error) {
     res.status(500).json({ message: "Failed to update card", error: error.message });
   }
@@ -180,8 +187,8 @@ exports.revokeCard = async (req, res) => {
     });
 
     res.status(200).json({
-      message: `Card for ${card.name} has been revoked (${reason}).`,
-      card: toCardDTO(card),
+      message: `Card for ${card.name} has been deactivated.`,
+      card: toCardDTO(req)(card),
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to revoke card", error: error.message });
@@ -206,7 +213,7 @@ exports.suspendCard = async (req, res) => {
 
     res.status(200).json({
       message: `Card for ${card.name} has been suspended.`,
-      card: toCardDTO(card),
+      card: toCardDTO(req)(card),
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to suspend card", error: error.message });
@@ -234,7 +241,7 @@ exports.reactivateCard = async (req, res) => {
 
     res.status(200).json({
       message: `Card for ${card.name} has been reactivated.`,
-      card: toCardDTO(card),
+      card: toCardDTO(req)(card),
     });
   } catch (error) {
     res.status(500).json({ message: "Failed to reactivate card", error: error.message });
@@ -347,8 +354,8 @@ exports.replaceCard = async (req, res) => {
 
     res.status(201).json({
       message: `Replacement card assigned. Old card (${oldCard.uid}) is now revoked.`,
-      oldCard: toCardDTO(oldCard),
-      newCard: toCardDTO(populatedNew),
+      oldCard: toCardDTO(req)(oldCard),
+      newCard: toCardDTO(req)(populatedNew),
     });
   } catch (error) {
     await session.abortTransaction();
@@ -382,7 +389,7 @@ exports.linkCardToUser = async (req, res) => {
 
     await auditLog(req, "link_card", card._id, { uid: card.uid, userRef, name: card.name });
 
-    res.status(200).json({ message: `Card linked to ${card.name} successfully.`, card: toCardDTO(card) });
+    res.status(200).json({ message: `Card linked to ${card.name} successfully.`, card: toCardDTO(req)(card) });
   } catch (error) {
     res.status(500).json({ message: "Failed to link card to user", error: error.message });
   }
@@ -401,7 +408,7 @@ exports.deactivateCard = async (req, res) => {
 
     await auditLog(req, "deactivate_card", card._id, { uid: card.uid, name: card.name });
 
-    res.status(200).json({ message: `Card for ${card.name} has been deactivated.`, card: toCardDTO(card) });
+    res.status(200).json({ message: `Card for ${card.name} has been deactivated.`, card: toCardDTO(req)(card) });
   } catch (error) {
     res.status(500).json({ message: "Failed to deactivate card", error: error.message });
   }
