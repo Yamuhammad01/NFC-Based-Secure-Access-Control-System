@@ -251,3 +251,13 @@ npm run lint
 ##  License
 
 This project is licensed under the MIT License.
+
+---
+## Author
+Muhammad Idris
+
+• GitHub: https://github.com/Yamuhammad01 <br>
+• LinkedIn: https://www.linkedin.com/in/muhammad-idrisb2/ <br>
+• Email: idrismuhd814@gmail.com <br>
+
+---
