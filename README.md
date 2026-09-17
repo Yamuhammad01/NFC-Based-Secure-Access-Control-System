@@ -17,7 +17,7 @@ The system is structured as a **modern monorepo** comprising:
 
 ---
 
-##  Technical & Architectural  Decisions🌟
+##  Technical & Architectural  Decisions
 
 What makes this access control system stand out from generic CRUD applications:
 
@@ -51,13 +51,13 @@ By maintaining `admin-web`, `scanner-web`, `simulation-web`, and `backend` withi
 - Developers can launch the entire ecosystem concurrently with a single command (`npm run dev`).
 - Frontend applications share backend interface definitions, API client helpers, and styling design tokens.
 
-### 5. 🎨 High-Density Enterprise Admin Experience
+### 5.  High-Density Enterprise Admin Experience
 - **Admin Dashboard**: Features quick period selectors (`24H`, `7D`, `30D`), real-time metric cards with trend indicators, searchable activity feed with type filters (`All`, `Taps`, `Admin`), and administrative quick action shortcuts.
 - **Interactive Audit Inspector**: High-contrast, sticky-header table supporting multi-field instant search (UID, user, reader, door), result/role filter dropdowns, client-side pagination, Excel export (`xlsx`), and an inline **Log Inspection Modal** for deep transaction analysis.
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 graph TB
@@ -90,7 +90,7 @@ graph TB
 
 ---
 
-## 📊 Core Decision Flows & Diagrams
+##  Core Decision Flows & Diagrams
 
 ### 1. NFC Tap Verification Flow
 
@@ -134,7 +134,7 @@ stateDiagram-v2
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 nfc-access-control/
@@ -169,7 +169,7 @@ nfc-access-control/
 
 ---
 
-## 🔌 API Reference Highlights
+##  API Reference Highlights
 
 | Method | Endpoint | Auth | Role | Description |
 | :--- | :--- | :--- | :--- | :--- |
