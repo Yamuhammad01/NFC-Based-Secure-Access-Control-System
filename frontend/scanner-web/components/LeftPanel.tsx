@@ -32,7 +32,7 @@ export const LeftPanel = () => {
         >
           Secure Access <br />
           <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light">
-            with QR
+            with NFC
           </span>
         </motion.h1>
         <motion.p 
@@ -41,7 +41,7 @@ export const LeftPanel = () => {
           transition={{ delay: 0.1 }}
           className="text-text-secondary text-lg max-w-md"
         >
-          Scan your QR code to authenticate and gain secure access to restricted areas.
+          Scan your NFC to authenticate and gain secure access to restricted areas.
         </motion.p>
       </div>
 

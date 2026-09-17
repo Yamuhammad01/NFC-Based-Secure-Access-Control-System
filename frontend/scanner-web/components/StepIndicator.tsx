@@ -27,7 +27,7 @@ export const StepIndicator = ({ state }: StepIndicatorProps) => {
   };
 
   const steps = [
-    { id: 1, label: 'Scan QR', icon: <QrCode className="w-5 h-5" /> },
+    { id: 1, label: 'Scan NFC', icon: <QrCode className="w-5 h-5" /> },
     { id: 2, label: 'Verifying', icon: <Lock className="w-5 h-5" /> },
     { id: 3, label: 'Access Granted', icon: <CheckCircle2 className="w-5 h-5" /> },
   ];

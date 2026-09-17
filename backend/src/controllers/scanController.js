@@ -105,7 +105,7 @@ exports.scan = async (req, res) => {
         userName: card.name,
         role: card.role,
         userRef: card.userRef,
-        readerId: "QR_SCANNER",
+        readerId: "NFC_SCANNER",
         door: door || "unknown",
         result: ACCESS_RESULT.DENIED,
         reason: "Insufficient Permissions",

@@ -28,10 +28,10 @@ export const AuthCard = ({ state, result, onStartScan, onReset }: AuthCardProps)
         {/* Title Section */}
         <div className="text-center mb-12">
           <h2 className="text-4xl lg:text-5xl font-bold mb-3 text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary-light">
-            QR Authentication
+            NFC Authentication
           </h2>
           <p className="text-text-secondary text-lg">
-            Scan your QR code to authenticate for access
+            Scan your NFC code to authenticate for access
           </p>
         </div>
 
@@ -58,7 +58,7 @@ export const AuthCard = ({ state, result, onStartScan, onReset }: AuthCardProps)
                     onClick={onStartScan}
                     className="mt-8 px-10 py-4 bg-primary text-white rounded-2xl font-bold text-lg shadow-[0_0_20px_rgba(59,130,246,0.3)] transition-all"
                   >
-                    Click to Scan QR Code
+                    Click to Scan NFC 
                   </motion.button>
                 )}
 
