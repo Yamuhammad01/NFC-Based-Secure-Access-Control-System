@@ -112,53 +112,122 @@ const DashboardLayout = ({ children }) => {
     { name: "Settings",          icon: <FaCogs        className="text-teal-600" />,   href: "/dashboard/settings",      bg: "bg-teal-100"   },
   ];
 
-  // Sidebar menus for admin
-  const adminMenu = [
-    { name: "Dashboard", icon: <FaChartBar className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-100" },
-    { name: "User Management", icon: <FaUsers className="text-blue-600" />, href: "/dashboard/admin/users", bg: "bg-blue-100" },
-    { name: "Temporary Access", icon: <FaKey className="text-emerald-600" />, href: "/dashboard/admin/temporary-access", bg: "bg-emerald-100" },
-    { name: "Role Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/admin/role-permissions", bg: "bg-rose-100" },
-    { name: "Card Management", icon: <FaIdCard className="text-amber-600" />, href: "/dashboard/admin/cards", bg: "bg-amber-100" },
-    { name: "Audit Logs", icon: <FaHistory className="text-violet-600" />, href: "/dashboard/admin/audit-logs", bg: "bg-violet-100" },
+  // Sidebar menu sections for Admin
+  const adminMenuSections = [
+    {
+      title: "OVERVIEW",
+      items: [
+        { name: "Dashboard", icon: <FaChartBar className="text-indigo-600" />, href: "/dashboard/admin", bg: "bg-indigo-50 text-indigo-600" },
+      ],
+    },
+    {
+      title: "SECURITY MANAGEMENT",
+      items: [
+        { name: "User Management", icon: <FaUsers className="text-blue-600" />, href: "/dashboard/admin/users", bg: "bg-blue-50 text-blue-600" },
+        { name: "Temporary Access", icon: <FaKey className="text-emerald-600" />, href: "/dashboard/admin/temporary-access", bg: "bg-emerald-50 text-emerald-600" },
+        { name: "Role Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/admin/role-permissions", bg: "bg-rose-50 text-rose-600" },
+        { name: "Card Management", icon: <FaIdCard className="text-amber-600" />, href: "/dashboard/admin/cards", bg: "bg-amber-50 text-amber-600" },
+      ],
+    },
+    {
+      title: "SYSTEM LOGS",
+      items: [
+        { name: "Audit Logs", icon: <FaHistory className="text-violet-600" />, href: "/dashboard/admin/audit-logs", bg: "bg-violet-50 text-violet-600" },
+      ],
+    },
   ];
 
-  // Choose menu based on role
-  const menuItems = userRole === "admin" ? adminMenu : (userRole === "student" ? studentMenu : staffMenu);
+  // Sidebar menu sections for Staff
+  const staffMenuSections = [
+    {
+      title: "MY ACCESS",
+      items: [
+        { name: "Profile", icon: <FaUserCircle className="text-purple-600" />, href: "/dashboard/profile", bg: "bg-purple-50 text-purple-600" },
+        { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/permissions", bg: "bg-rose-50 text-rose-600" },
+        { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/logs", bg: "bg-blue-50 text-blue-600" },
+        { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/timeline", bg: "bg-violet-50 text-violet-600" },
+      ],
+    },
+    {
+      title: "SERVICES",
+      items: [
+        { name: "Card Replacement", icon: <FaExchangeAlt className="text-amber-600" />, href: "/dashboard/replacement", bg: "bg-amber-50 text-amber-600" },
+        { name: "Notifications", icon: <FaBell className="text-indigo-600" />, href: "/dashboard/notifications", bg: "bg-indigo-50 text-indigo-600", badge: true },
+        { name: "Temp Access", icon: <FaKey className="text-emerald-600" />, href: "/dashboard/temp-access", bg: "bg-emerald-50 text-emerald-600" },
+        { name: "Settings", icon: <FaCogs className="text-teal-600" />, href: "/dashboard/settings", bg: "bg-teal-50 text-teal-600" },
+      ],
+    },
+  ];
+
+  // Sidebar menu sections for Student
+  const studentMenuSections = [
+    {
+      title: "STUDENT PORTAL",
+      items: [
+        { name: "Profile", icon: <FaUserCircle className="text-emerald-600" />, href: "/dashboard/profile", bg: "bg-emerald-50 text-emerald-600" },
+        { name: "Access Permissions", icon: <FaShieldAlt className="text-rose-600" />, href: "/dashboard/permissions", bg: "bg-rose-50 text-rose-600" },
+        { name: "Access History", icon: <FaHistory className="text-blue-600" />, href: "/dashboard/logs", bg: "bg-blue-50 text-blue-600" },
+        { name: "Activity Timeline", icon: <FaStream className="text-violet-600" />, href: "/dashboard/timeline", bg: "bg-violet-50 text-violet-600" },
+        { name: "Notifications", icon: <FaBell className="text-indigo-600" />, href: "/dashboard/notifications", bg: "bg-indigo-50 text-indigo-600", badge: true },
+        { name: "Temp Access", icon: <FaKey className="text-emerald-600" />, href: "/dashboard/temp-access", bg: "bg-emerald-50 text-emerald-600" },
+        { name: "Settings", icon: <FaCogs className="text-teal-600" />, href: "/dashboard/settings", bg: "bg-teal-50 text-teal-600" },
+      ],
+    },
+  ];
+
+  const menuSections = userRole === "admin" ? adminMenuSections : (userRole === "student" ? studentMenuSections : staffMenuSections);
 
   const handleMenuClick = (href) => {
     navigate(href);
   };
 
   return (
-    <div className="drawer lg:drawer-open h-screen overflow-hidden">
+    <div className="drawer lg:drawer-open h-screen overflow-hidden bg-slate-100 font-sans">
       {/* Drawer toggle for small screens */}
       <input id="my-drawer" type="checkbox" className="drawer-toggle" />
       <div className="drawer-content flex flex-col h-full min-h-0">
         {/* Top Navbar */}
-        <div className="navbar bg-white border-b shadow-sm px-4 flex-shrink-0">
+        <header className="navbar bg-white border-b border-slate-200/80 px-4 lg:px-6 h-16 flex-shrink-0 z-30 shadow-xs">
           <div className="flex-none lg:hidden">
             <label
               htmlFor="my-drawer"
-              className="btn btn-square btn-ghost text-blue-600 hover:bg-blue-50 transition-colors"
+              className="btn btn-square btn-ghost text-slate-600 hover:bg-slate-100 transition-colors"
             >
-              <FaBars size={22} />
+              <FaBars size={20} />
             </label>
           </div>
-          <div className="flex-1">
-            <span className="text-xl md:text-2xl font-bold text-blue-700 flex items-center gap-2">
-              Access Control Dashboard
-            </span>
+          <div className="flex-1 flex items-center gap-3">
+            <div className="hidden sm:flex items-center justify-center w-9 h-9 rounded-lg bg-indigo-600 text-white shadow-sm shadow-indigo-600/30">
+              <FaShieldAlt className="text-base" />
+            </div>
+            <div>
+              <h1 className="text-base font-bold text-slate-800 leading-tight">
+                Secure NFC Access System
+              </h1>
+              <p className="text-[11px] text-slate-400 font-medium">Enterprise Control Panel</p>
+            </div>
           </div>
-          <div className="flex-none flex items-center gap-2">
-            <button onClick={handleLogout} className="btn bg-red-500 text-white hover:bg-red-600 rounded-lg flex items-center gap-2 transition-colors px-2 sm:px-4">
-              <FaSignOutAlt />
-              <span className="hidden sm:inline">Log Out</span>
+
+          <div className="flex-none flex items-center gap-3">
+            {/* Live System Status Indicator */}
+            <div className="hidden md:flex items-center gap-2 bg-emerald-50 border border-emerald-200/60 px-3 py-1 rounded-full text-xs text-emerald-700 font-semibold">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+              <span>System Operational</span>
+            </div>
+
+            {/* Logout Button */}
+            <button
+              onClick={handleLogout}
+              className="btn btn-sm bg-slate-100 border border-slate-200 text-slate-700 hover:bg-rose-50 hover:text-rose-600 hover:border-rose-200 rounded-xl flex items-center gap-2 transition-all px-3"
+            >
+              <FaSignOutAlt className="text-xs" />
+              <span className="hidden sm:inline text-xs font-semibold">Sign Out</span>
             </button>
           </div>
-        </div>
+        </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 lg:p-6 bg-gradient-to-br from-gray-50 to-blue-50 overflow-y-auto min-h-0">
+        <main className="flex-1 bg-slate-50/70 overflow-y-auto min-h-0">
           <div className="h-full">{children}</div>
         </main>
       </div>
@@ -170,93 +239,131 @@ const DashboardLayout = ({ children }) => {
           aria-label="close sidebar"
           className="drawer-overlay"
         ></label>
-        <aside className="menu bg-white text-gray-800 min-h-full w-72 p-4 border-r shadow-lg overflow-y-auto">
-          {/* Profile */}
-          <div className="flex flex-col items-center p-6 border-b border-gray-200 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl mb-6">
-            <div className="w-20 h-20 rounded-full overflow-hidden mb-4 shadow-lg">
-              {userProfile?.profilePhoto ? (
-                <img 
-                  src={userProfile.profilePhoto} 
-                  alt="Profile" 
-                  className="w-full h-full object-cover"
-                />
-              ) : (
-                <div className="w-full h-full bg-gradient-to-br from-teal-400 to-blue-500 flex items-center justify-center">
-                  <FaUser className="text-white text-2xl" />
-                </div>
-              )}
-            </div>
-            {loading ? (
-              <div className="animate-pulse">
-                <div className="h-6 bg-gray-200 rounded w-32 mb-2"></div>
-                <div className="h-4 bg-gray-200 rounded w-16"></div>
+        <aside className="menu bg-white text-slate-700 min-h-full w-72 p-4 border-r border-slate-200 shadow-sm flex flex-col justify-between overflow-y-auto">
+          <div>
+            {/* Sidebar Brand Header */}
+            <div className="flex items-center gap-3 px-3 py-2 mb-4 border-b border-slate-100 pb-4">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-blue-700 flex items-center justify-center text-white shadow-md shadow-indigo-600/20">
+                <FaShieldAlt className="text-lg" />
               </div>
-            ) : (
-              <>
-                <h2 className="font-bold text-lg text-gray-800">
-                  {userProfile && (userProfile.firstName || userProfile.lastName) 
-                    ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim()
-                    : 'User'
-                  }
-                </h2>
-                <p className="text-sm text-gray-600 bg-blue-100 px-3 py-1 rounded-full capitalize">
-                  {userRole}
-                </p>
-                {userProfile?.department && (
-                  <p className="text-xs text-gray-500 mt-1">
-                    {userProfile.department}
-                  </p>
+              <div>
+                <span className="font-black text-slate-900 text-base tracking-tight block">
+                  NFC ACCESS PRO
+                </span>
+                <span className="text-[10px] uppercase tracking-wider text-slate-400 font-bold block">
+                  Admin Workspace
+                </span>
+              </div>
+            </div>
+
+            {/* User Profile Summary Card */}
+            <div className="p-3.5 border border-slate-200/80 bg-slate-50/80 rounded-2xl mb-5 flex items-center gap-3">
+              <div className="relative">
+                <div className="w-11 h-11 rounded-full overflow-hidden shadow-sm border border-white">
+                  {userProfile?.profilePhoto ? (
+                    <img
+                      src={userProfile.profilePhoto}
+                      alt="Profile"
+                      className="w-full h-full object-cover"
+                    />
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-slate-700 to-slate-900 flex items-center justify-center text-white">
+                      <FaUser className="text-sm" />
+                    </div>
+                  )}
+                </div>
+                <span className="absolute bottom-0 right-0 w-3 h-3 bg-emerald-500 border-2 border-white rounded-full"></span>
+              </div>
+
+              <div className="flex-1 min-w-0">
+                {loading ? (
+                  <div className="animate-pulse space-y-1">
+                    <div className="h-4 bg-slate-200 rounded w-24"></div>
+                    <div className="h-3 bg-slate-200 rounded w-12"></div>
+                  </div>
+                ) : (
+                  <>
+                    <h2 className="font-bold text-sm text-slate-900 truncate">
+                      {userProfile && (userProfile.firstName || userProfile.lastName)
+                        ? `${userProfile.firstName || ''} ${userProfile.lastName || ''}`.trim()
+                        : 'Administrator'}
+                    </h2>
+                    <div className="flex items-center gap-1.5 mt-0.5">
+                      <span className="text-[10px] uppercase font-bold tracking-wider px-2 py-0.5 rounded-md bg-indigo-100 text-indigo-700 border border-indigo-200/50">
+                        {userRole || 'User'}
+                      </span>
+                    </div>
+                  </>
                 )}
-              </>
-            )}
+              </div>
+            </div>
+
+            {/* Structured Navigation Menu */}
+            <div className="space-y-5">
+              {menuSections.map((section) => (
+                <div key={section.title}>
+                  <h3 className="text-[11px] font-bold text-slate-400 uppercase tracking-widest px-3 mb-2">
+                    {section.title}
+                  </h3>
+                  <ul className="space-y-1">
+                    {section.items.map((item) => {
+                      const isActive = location.pathname === item.href;
+                      let badgeCount = 0;
+                      if (item.badge) {
+                        try {
+                          const readIds = new Set(JSON.parse(localStorage.getItem("securityNotifications_read") || "[]"));
+                          badgeCount = 7 - readIds.size;
+                          if (badgeCount < 0) badgeCount = 0;
+                        } catch { /* ignore */ }
+                      }
+
+                      return (
+                        <li key={item.name}>
+                          <button
+                            onClick={() => handleMenuClick(item.href)}
+                            className={`flex items-center gap-3 px-3 py-2.5 rounded-xl transition-all duration-150 text-xs font-semibold w-full text-left group ${
+                              isActive
+                                ? "bg-indigo-600 text-white shadow-md shadow-indigo-600/20"
+                                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+                            }`}
+                          >
+                            <div
+                              className={`p-1.5 rounded-lg text-sm transition-colors ${
+                                isActive ? "bg-white/20 text-white" : item.bg
+                              }`}
+                            >
+                              {item.icon}
+                            </div>
+                            <span className="flex-1 truncate">{item.name}</span>
+                            {item.badge && badgeCount > 0 && (
+                              <span
+                                className={`ml-auto text-[10px] font-black px-1.5 py-0.5 rounded-full ${
+                                  isActive ? "bg-white text-indigo-600" : "bg-rose-500 text-white"
+                                }`}
+                              >
+                                {badgeCount}
+                              </span>
+                            )}
+                          </button>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </div>
+              ))}
+            </div>
           </div>
 
-          {/* Menu */}
-          <ul className="space-y-2">
-            {menuItems.map((item) => {
-              // Live unread count for notification badge
-              let badgeCount = 0;
-              if (item.badge) {
-                try {
-                  const readIds = new Set(JSON.parse(localStorage.getItem("securityNotifications_read") || "[]"));
-                  const TOTAL_NOTIFS = 7; // matches MOCK_NOTIFICATIONS length
-                  badgeCount = TOTAL_NOTIFS - readIds.size;
-                  if (badgeCount < 0) badgeCount = 0;
-                } catch { /* ignore */ }
-              }
-              return (
-                <li key={item.name}>
-                  <button
-                    onClick={() => handleMenuClick(item.href)}
-                    className={`flex items-center gap-3 p-3 rounded-xl hover:bg-blue-50 text-gray-700 hover:text-blue-700 transition-all duration-200 group w-full text-left ${
-                      location.pathname === item.href ? "bg-blue-50 text-blue-700" : ""
-                    }`}
-                  >
-                    <div className={`p-2 rounded-lg group-hover:opacity-80 transition-colors ${item.bg}`}>
-                      {item.icon}
-                    </div>
-                    <span className="font-medium flex-1">{item.name}</span>
-                    {item.badge && badgeCount > 0 && (
-                      <span className="ml-auto bg-rose-500 text-white text-[10px] font-extrabold min-w-[18px] h-[18px] rounded-full flex items-center justify-center px-1">
-                        {badgeCount}
-                      </span>
-                    )}
-                  </button>
-                </li>
-              );
-            })}
-          </ul>
-
-          {/* ── Sidebar logout button ──────────────────────────────── */}
-          <div className="mt-auto pt-6 border-t border-slate-100">
+          {/* Sidebar Logout Action */}
+          <div className="pt-4 mt-6 border-t border-slate-100">
             <button
               onClick={handleLogout}
-              className="flex items-center gap-3 w-full p-3 rounded-xl text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all duration-200 group font-semibold"
+              className="flex items-center gap-3 w-full px-3 py-2.5 rounded-xl text-xs font-bold text-rose-600 hover:bg-rose-50 hover:text-rose-700 transition-all group"
             >
-              <div className="p-2 bg-rose-100 rounded-lg group-hover:bg-rose-200 transition-colors">
-                <FaSignOutAlt className="text-rose-600" />
+              <div className="p-1.5 bg-rose-100/80 rounded-lg text-rose-600 group-hover:bg-rose-200 transition-colors">
+                <FaSignOutAlt className="text-xs" />
               </div>
-              <span>Log Out</span>
+              <span>Sign Out</span>
             </button>
           </div>
         </aside>
