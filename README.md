@@ -17,7 +17,48 @@ The system is structured as a **modern monorepo** comprising:
 
 ---
 
-##  Technical & Architectural  Decisions🌟
+##  Demo Logins & End-to-End Test Scenarios
+
+To allow  evaluators to test **every single flow end-to-end**, run `npm run seed` to populate the database with pre-configured demo accounts:
+
+```bash
+# Seed database with complete test datasets
+npm run seed
+```
+
+###  Pre-Seeded Demo Accounts
+
+| Role | Demo Email | Password | Card UID | Unlocked Application Features & Testing Flow |
+| :--- | :--- | :--- | :--- | :--- |
+| ** System Admin** | `admin@university.edu.ng` | `AdminPassword123!` | `ADM88888` | **Full Enterprise Control**: Live Overview Dashboard, Cardholder CRUD, Card Revocation & Replacement, Temporary Access Approvals, Role Permissions, Security Audit Log Inspection. |
+| ** Academic Staff (Active)** | `staff@university.edu.ng` | `StaffPassword123!` | `STF10001` | **Staff Portal**: Personal Access History, Activity Timeline, Card Replacement Requests, Security Notifications, Temp Access Requests. |
+| ** Academic Staff (Replacement & Temp Ticket)** | `staff2@university.edu.ng` | `StaffPassword123!` | `STF10002` | **Advanced Staff Flow**: Linked replacement history from old UID `STF09999`, pending Server Room access ticket (`TKT-8849`). |
+| ** Student (Active)** | `student@university.edu.ng` | `StudentPassword123!` | `STD20001` | **Student Portal**: Limited Access History, Time-Window Access, Personal Tap Timeline. |
+| ** Student (Suspended / Lost Card)** | `student2@university.edu.ng` | `StudentPassword123!` | `STD20002` | **Security Failure Scenario**: Card status `suspended` / `lost`. Simulating a tap with `STD20002` triggers access denial and logs incident in Audit Logs. |
+
+---
+
+##  End-to-End Walkthrough Scenarios for Demo
+
+1. **Scenario 1 — Live NFC Tap & Verification**:
+   - Open Tap Simulator (`simulation-web` on port `:5175`).
+   - Select Reader `RD-001 (Main Gate)` and enter UID `STF10001` (Prof. Chinedu Okafor). Tap card.
+   - Result: **Access Granted** logged instantly in real-time.
+2. **Scenario 2 — Anti-Passback Violation**:
+   - Tap `STF10001` again at `RD-001` with direction `entry`.
+   - Result: **Access Denied (`anti_passback_violation`)** logged in Audit Logs.
+3. **Scenario 3 — Card Revocation & Instant Invalidation**:
+   - Log into Admin Dashboard (`admin-web` on port `:5173`) as `admin@university.edu.ng`.
+   - Navigate to **Card Management** and suspend card `STF10001`.
+   - Re-test tap in Tap Simulator ➔ Access immediately **Denied**.
+4. **Scenario 4 — Temporary Access Request & Approval Workflow**:
+   - Log in as `staff2@university.edu.ng` (Dr. Amina Bello) and view submitted temporary access ticket `TKT-8849`.
+   - Log in as Admin ➔ Navigate to **Temporary Access** ➔ Click **Approve Ticket**.
+   - Dr. Amina Bello's NFC access permissions update in real-time.
+
+---
+
+##  Technical & Architectural  Decisions
 
 What makes this access control system stand out from generic CRUD applications:
 
@@ -51,13 +92,13 @@ By maintaining `admin-web`, `scanner-web`, `simulation-web`, and `backend` withi
 - Developers can launch the entire ecosystem concurrently with a single command (`npm run dev`).
 - Frontend applications share backend interface definitions, API client helpers, and styling design tokens.
 
-### 5. 🎨 High-Density Enterprise Admin Experience
+### 5.  High-Density Enterprise Admin Experience
 - **Admin Dashboard**: Features quick period selectors (`24H`, `7D`, `30D`), real-time metric cards with trend indicators, searchable activity feed with type filters (`All`, `Taps`, `Admin`), and administrative quick action shortcuts.
 - **Interactive Audit Inspector**: High-contrast, sticky-header table supporting multi-field instant search (UID, user, reader, door), result/role filter dropdowns, client-side pagination, Excel export (`xlsx`), and an inline **Log Inspection Modal** for deep transaction analysis.
 
 ---
 
-## 🏗️ System Architecture
+##  System Architecture
 
 ```mermaid
 graph TB
@@ -90,7 +131,7 @@ graph TB
 
 ---
 
-## 📊 Core Decision Flows & Diagrams
+##  Core Decision Flows & Diagrams
 
 ### 1. NFC Tap Verification Flow
 
@@ -134,7 +175,7 @@ stateDiagram-v2
 
 ---
 
-## 📁 Repository Structure
+##  Repository Structure
 
 ```
 nfc-access-control/
@@ -169,7 +210,7 @@ nfc-access-control/
 
 ---
 
-## 🔌 API Reference Highlights
+##  API Reference Highlights
 
 | Method | Endpoint | Auth | Role | Description |
 | :--- | :--- | :--- | :--- | :--- |

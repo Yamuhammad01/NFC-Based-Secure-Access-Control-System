@@ -15,6 +15,7 @@
     "dev:simulation": "npm run dev --workspace=nfc-simulation-web",
     "dev:backend": "npm run dev --workspace=nfc-backend",
     "dev": "concurrently -n \"BACKEND,ADMIN,SCANNER,SIM\" -c \"bgBlue,bgGreen,bgMagenta,bgCyan\" \"npm run dev:backend\" \"npm run dev:admin\" \"npm run dev:scanner\" \"npm run dev:simulation\"",
+    "seed": "npm run seed --workspace=nfc-backend",
     "build": "npm run build --workspaces",
     "lint": "npm run lint --workspaces"
   },
