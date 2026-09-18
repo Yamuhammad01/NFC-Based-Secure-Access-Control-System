@@ -146,7 +146,7 @@ const TempAccessRequest = () => {
       let effectivePerms = [];
       if (userId) {
         const token = localStorage.getItem("authToken");
-        const permResponse = await fetch(`http://localhost:5000/api/permissions/user/${userId}`, {
+        const permResponse = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/permissions/user/${userId}`, {
           headers: { Authorization: `Bearer ${token}` },
         });
         if (permResponse.ok) {

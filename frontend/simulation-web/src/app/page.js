@@ -8,7 +8,7 @@ import UserInfo from '@/components/UserInfo';
 import LogTable from '@/components/LogTable';
 import { ShieldAlert, AlertTriangle } from 'lucide-react';
 
-const BACKEND_URL = "http://localhost:5000/api";
+const BACKEND_URL = process.env.NEXT_PUBLIC_BACKEND_URL || "http://localhost:5000/api";
 
 export default function Dashboard() {
   const [selectedDoor, setSelectedDoor] = useState(DOORS[0]);

@@ -24,7 +24,7 @@ const StaffPermissions = () => {
       // Fetch permissions from API
       const token = localStorage.getItem("authToken");
       const userId = profileData._id || profileData.id;
-      const permResponse = await fetch(`http://localhost:5000/api/permissions/user/${userId}`, {
+      const permResponse = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/permissions/user/${userId}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },

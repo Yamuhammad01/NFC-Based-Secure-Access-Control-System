@@ -42,7 +42,7 @@ const RolePermissions = () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`http://localhost:5000/api/permissions/role/${selectedRole}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/permissions/role/${selectedRole}`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -75,7 +75,7 @@ const RolePermissions = () => {
     try {
       setSaving(true);
       const token = localStorage.getItem("authToken");
-      const response = await fetch(`http://localhost:5000/api/permissions/role/${selectedRole}`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || "http://localhost:5000/api"}/permissions/role/${selectedRole}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
