@@ -5,16 +5,14 @@ const path = require("path");
 const fs = require("fs");
 const authenticate = require("../middlewares/auth");
 const Users = require("../models/Users");
+const { getUploadsRoot, getUploadSubdir } = require("../utils/upload");
 
 // ──────────────────────────────────────────────
 //  Multer Storage Configuration
 // ──────────────────────────────────────────────
-const uploadDir = path.join(__dirname, "..", "..", "uploads", "profile-photos");
-
-// Ensure the directory exists
-if (!fs.existsSync(uploadDir)) {
-  fs.mkdirSync(uploadDir, { recursive: true });
-}
+// Locally: <backend>/uploads/profile-photos
+// On Vercel (serverless): /tmp/uploads/profile-photos (writable/ephemeral)
+const uploadDir = getUploadSubdir("profile-photos");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -143,7 +141,10 @@ router.post("/add/profilePhoto", authenticate, (req, res) => {
       // Delete old photo if it exists (local file)
       const currentUser = await Users.findById(req.user.userId);
       if (currentUser && currentUser.profilePhoto) {
-        const oldPhotoPath = path.join(__dirname, "..", "..", currentUser.profilePhoto);
+        // profilePhoto is stored as "/uploads/profile-photos/<file>".
+        // Normalize it to a path relative to the active uploads root.
+        const relative = currentUser.profilePhoto.replace(/^\/uploads\//, "");
+        const oldPhotoPath = path.join(getUploadsRoot(), relative);
         if (fs.existsSync(oldPhotoPath)) {
           fs.unlinkSync(oldPhotoPath);
         }

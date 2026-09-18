@@ -9,6 +9,7 @@ const path = require("path");
 
 const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
+const { getUploadsRoot } = require("./utils/upload");
 
 // Route imports
 const authRoutes = require("./routes/authRoutes");
@@ -45,8 +46,8 @@ const limiter = rateLimit({
 });
 app.use("/api", limiter);
 
-// Serve uploaded files statically
-app.use("/uploads", express.static(path.join(__dirname, "..", "uploads")));
+// Serve uploaded files statically (resolves to /tmp/uploads on Vercel, backend/uploads locally)
+app.use("/uploads", express.static(getUploadsRoot()));
 
 // ──────────────────────────────────────────────
 //  API Routes
