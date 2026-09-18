@@ -28,6 +28,10 @@ const notificationRoutes = require("./routes/notificationRoutes");
 
 const app = express();
 
+
+// Trusting the single proxy hop lets req.ip resolve to the real client IP.
+app.set("trust proxy", process.env.VERCEL ? 1 : false);
+
 // ──────────────────────────────────────────────
 //  Global Middleware
 // ──────────────────────────────────────────────
