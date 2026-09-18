@@ -11,6 +11,18 @@ const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
 const { getUploadsRoot } = require("./utils/upload");
 
+
+let dbConnectPromise = null;
+const ensureDB = () => {
+  if (!dbConnectPromise) {
+    dbConnectPromise = connectDB().catch((err) => {
+      dbConnectPromise = null; // clear so the next request can retry
+      throw err;
+    });
+  }
+  return dbConnectPromise;
+};
+
 // Route imports
 const authRoutes = require("./routes/authRoutes");
 const userRoutes = require("./routes/userRoutes");
@@ -54,6 +66,20 @@ app.use("/api", limiter);
 app.use("/uploads", express.static(getUploadsRoot()));
 
 // ──────────────────────────────────────────────
+//  Ensure MongoDB is connected before handling ANY request.
+//  Without this, requests arriving during a serverless cold start buffer in
+//  Mongoose for 10s, then fail with "buffering timed out" (HTTP 500).
+// ──────────────────────────────────────────────
+app.use(async (req, res, next) => {
+  try {
+    await ensureDB();
+    next();
+  } catch (err) {
+    next(err);
+  }
+});
+
+// ──────────────────────────────────────────────
 //  API Routes
 // ──────────────────────────────────────────────
 app.use("/api/auth", authRoutes);
@@ -95,8 +121,8 @@ const startServer = async () => {
 if (process.env.NODE_ENV !== "production" || !process.env.VERCEL) {
   startServer();
 } else {
-  // connect to the DB on vercel 
-  connectDB();
+  // Kick off the connection at cold start (memoized + awaited per-request via ensureDB).
+  ensureDB().catch((err) => console.error("Initial DB connect failed:", err.message));
 }
 
 module.exports = app;
