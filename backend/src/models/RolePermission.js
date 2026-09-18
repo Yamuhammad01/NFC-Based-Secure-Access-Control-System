@@ -27,6 +27,4 @@ const rolePermissionSchema = new mongoose.Schema(
   { timestamps: false }
 );
 
-rolePermissionSchema.index({ role: 1 }, { unique: true });
-
 module.exports = mongoose.model("RolePermission", rolePermissionSchema);

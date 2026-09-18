@@ -76,7 +76,6 @@ const temporaryAccessSchema = new mongoose.Schema(
 );
 
 // Indexes for fast lookups
-temporaryAccessSchema.index({ ticketId: 1 });
 temporaryAccessSchema.index({ userRef: 1, submittedAt: -1 });
 temporaryAccessSchema.index({ status: 1 });
 temporaryAccessSchema.index({ staffId: 1 });
