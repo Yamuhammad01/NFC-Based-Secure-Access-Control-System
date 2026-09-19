@@ -49,7 +49,7 @@ const DashboardOverview = () => {
     {
       id: "mock-1",
       type: "access",
-      action: "Access granted — Adebayo Oluwaseun at Main Gate",
+      action: "Access granted — Muhammad Idris at Main Gate",
       timestamp: new Date(Date.now() - 2 * 60 * 1000).toISOString(),
       details: { uid: "A1B2C3D4", readerId: "RD-001", door: "main_gate", result: "granted" },
     },

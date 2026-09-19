@@ -74,9 +74,9 @@ const seedDatabase = async () => {
       },
       // 2. Staff Account 1 (Active Senior Lecturer)
       {
-        name: "Prof. Chinedu Okafor",
-        firstName: "Chinedu",
-        lastName: "Okafor",
+        name: "Dr. Abdullahi Isa",
+        firstName: "Abdullahi",
+        lastName: "Isa",
         email: "staff@university.edu.ng",
         password: staffPassword,
         staffId: "STF-1001",
@@ -110,9 +110,9 @@ const seedDatabase = async () => {
       },
       // 4. Student Account 1 (Active Undergraduate)
       {
-        name: "Adebayo Oluwaseun",
-        firstName: "Adebayo",
-        lastName: "Oluwaseun",
+        name: "Muhammad Idris",
+        firstName: "Muhammad",
+        lastName: "Idris",
         email: "student@university.edu.ng",
         password: studentPassword,
         staffId: "STD-202401",
@@ -222,7 +222,7 @@ const seedDatabase = async () => {
       {
         uid: "STF10001",
         userRef: userMap["staff@university.edu.ng"]._id,
-        name: "Prof. Chinedu Okafor",
+        name: "Dr. Abdullahi Isa",
         role: ROLES.STAFF,
         accessLevel: 2,
         status: STATUS.ACTIVE,
@@ -250,7 +250,7 @@ const seedDatabase = async () => {
       {
         uid: "STD20001",
         userRef: userMap["student@university.edu.ng"]._id,
-        name: "Adebayo Oluwaseun",
+        name: "Muhammad Idris",
         role: ROLES.STUDENT,
         accessLevel: 1,
         status: STATUS.ACTIVE,
@@ -380,7 +380,7 @@ const seedDatabase = async () => {
       },
       {
         uid: "STF10001",
-        userName: "Prof. Chinedu Okafor",
+        userName: "Dr. Abdullahi Isa",
         role: "staff",
         userRef: userMap["staff@university.edu.ng"]._id,
         readerId: "RD-004",
@@ -403,7 +403,7 @@ const seedDatabase = async () => {
       },
       {
         uid: "STD20001",
-        userName: "Adebayo Oluwaseun",
+        userName: "Muhammad Idris",
         role: "student",
         userRef: userMap["student@university.edu.ng"]._id,
         readerId: "RD-002",
@@ -414,7 +414,7 @@ const seedDatabase = async () => {
       },
       {
         uid: "STD20001",
-        userName: "Adebayo Oluwaseun",
+        userName: "Muhammad Idris",
         role: "student",
         userRef: userMap["student@university.edu.ng"]._id,
         readerId: "RD-002",
@@ -580,7 +580,7 @@ const seedDatabase = async () => {
 
     process.exit(0);
   } catch (error) {
-    console.error("❌ Seeding Database Error:", error);
+    console.error(" Seeding Database Error:", error);
     process.exit(1);
   }
 };

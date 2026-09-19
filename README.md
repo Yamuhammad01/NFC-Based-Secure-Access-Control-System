@@ -42,7 +42,7 @@ npm run seed
 
 1. **Scenario 1 — Live NFC Tap & Verification**:
    - Open Tap Simulator (`simulation-web` on port `:5175`).
-   - Select Reader `RD-001 (Main Gate)` and enter UID `STF10001` (Prof. Chinedu Okafor). Tap card.
+   - Select Reader `RD-001 (Main Gate)` and enter UID `STF10001` (Dr. Abdullahi Isa). Tap card.
    - Result: **Access Granted** logged instantly in real-time.
 2. **Scenario 2 — Anti-Passback Violation**:
    - Tap `STF10001` again at `RD-001` with direction `entry`.

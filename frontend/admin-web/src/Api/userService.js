@@ -14,8 +14,8 @@ export const generateMockUID = () => {
 let mockUsers = [
   {
     id: "mock-1",
-    name: "Dr. Adebayo Oluwaseun",
-    email: "a.oluwaseun@university.edu.ng",
+    name: "Muhammad Idris",
+    email: "m.idris@university.edu.ng",
     phone: "+2348031234567",
     staffId: "ST-00234",
     department: "Computer Science",

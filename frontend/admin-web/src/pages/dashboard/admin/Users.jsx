@@ -702,7 +702,7 @@ const UsersPage = () => {
                       value={formData.name || ""}
                       onChange={handleInputChange}
                       className="input input-bordered w-full rounded-xl py-2 px-3 border-gray-200 text-sm focus:border-blue-500 focus:outline-none"
-                      placeholder="e.g. Adebayo Oluwaseun"
+                      placeholder="e.g. Muhammad Idris"
                       required
                     />
                   </div>
