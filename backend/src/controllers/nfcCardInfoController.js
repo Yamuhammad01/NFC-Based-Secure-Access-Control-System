@@ -3,6 +3,7 @@ const NfcCardInfo = require("../models/NfcCardInfo");
 const Users = require("../models/Users");
 const AdminAuditLog = require("../models/AdminAuditLog");
 const { STATUS, ROLES } = require("../config/constants");
+const { resolvePhotoUrl } = require("../utils/upload");
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
@@ -29,7 +30,7 @@ const auditLog = async (req, action, targetId, details = {}) => {
 /** Maps a Mongoose card document to a plain object with a top-level `id`. */
 const normalizePhoto = (req, obj) => {
   if (obj.userRef && obj.userRef.profilePhoto) {
-    obj.userRef.profilePhoto = `${req.protocol}://${req.get("host")}${obj.userRef.profilePhoto}`;
+    obj.userRef.profilePhoto = resolvePhotoUrl(req, obj.userRef.profilePhoto);
   }
 };
 

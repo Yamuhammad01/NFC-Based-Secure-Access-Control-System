@@ -256,6 +256,9 @@ PORT=5000
 MONGO_URI=mongodb://localhost:27017/nfc_access_control
 JWT_SECRET=your_super_secret_jwt_key_here
 NODE_ENV=development
+
+# Optional — persistent profile-photo uploads (required on Vercel)
+# CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>
 ```
 
 ### 3. Run Monorepo in Development Mode
@@ -272,6 +275,18 @@ This launches:
 -  **Scanner Terminal**: `http://localhost:5174`
 -  **NFC Tap Simulator**: `http://localhost:5175`
 
+> **Note:** `npm run dev` must be run from the **repository root**, after a root-level
+> `npm install`. Running it from a subfolder like `frontend/` also works (npm walks up to
+> the root `package.json`), but only if the root devDependency is installed.
+>
+> If you see `'concurrently' is not recognized as an internal or external command`, the
+> root install never completed — fix it with:
+>
+> ```bash
+> cd <repository-root>   # the folder containing the root package.json
+> npm install
+> ```
+
 ---
 
 ##  Verification & Build Scripts
@@ -286,6 +301,36 @@ npm --prefix frontend/admin-web run build
 # Lint codebases
 npm run lint
 ```
+
+---
+
+##  Verifying File Uploads (Cloudinary)
+
+Profile-photo uploads support two modes, and both can be verified locally — no
+deployment required:
+
+```bash
+cd backend
+
+# Test whichever mode backend/.env currently selects
+npm run verify:upload
+
+# Force the Cloudinary path (requires CLOUDINARY_URL in backend/.env)
+npm run verify:upload -- --cloud
+
+# Force the local-disk fallback (no credentials needed)
+npm run verify:upload -- --local
+```
+
+Each run boots the real API on a spare port, logs in as a throwaway user, uploads a
+real multipart image to `/api/add/profilePhoto`, then asserts that the stored photo is
+publicly fetchable, that replacing it destroys the previous asset, and that the
+database holds the newest value. Every test artifact (user, Cloudinary assets, local
+files) is removed afterwards.
+
+> To exercise the cloud path locally, put real credentials in `backend/.env`:
+> `CLOUDINARY_URL=cloudinary://<api_key>:<api_secret>@<cloud_name>`
+> (Cloudinary Dashboard → API Keys → "API environment variable"). 
 
 ---
 

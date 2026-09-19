@@ -6,6 +6,7 @@ const UserPermission = require("../models/UserPermission");
 const bcrypt = require("bcryptjs");
 const crypto = require("crypto");
 const ACCESS_AREAS_DEFAULTS = require("../config/roleDefaults");
+const { resolvePhotoUrl } = require("../utils/upload");
 
 // Helper to generate temporary password for new users
 function generateTempPassword() {
@@ -80,9 +81,7 @@ exports.getAllUsers = async (req, res) => {
     const mappedList = userList.map(u => {
       const obj = u.toObject();
       obj.id = u._id.toString();
-      if (obj.profilePhoto) {
-        obj.profilePhoto = `${req.protocol}://${req.get("host")}${obj.profilePhoto}`;
-      }
+      obj.profilePhoto = resolvePhotoUrl(req, obj.profilePhoto);
       return obj;
     });
 
@@ -104,9 +103,7 @@ exports.getUserById = async (req, res) => {
 
     const userObj = user.toObject();
     userObj.id = user._id.toString();
-    if (userObj.profilePhoto) {
-      userObj.profilePhoto = `${req.protocol}://${req.get("host")}${userObj.profilePhoto}`;
-    }
+    userObj.profilePhoto = resolvePhotoUrl(req, userObj.profilePhoto);
     res.status(200).json(userObj);
   } catch (error) {
     res.status(500).json({ message: "Error fetching user details", error: error.message });
@@ -341,9 +338,7 @@ exports.updateUser = async (req, res) => {
     const userObj = user.toObject();
     delete userObj.password;
     userObj.id = user._id.toString();
-    if (userObj.profilePhoto) {
-      userObj.profilePhoto = `${req.protocol}://${req.get("host")}${userObj.profilePhoto}`;
-    }
+    userObj.profilePhoto = resolvePhotoUrl(req, userObj.profilePhoto);
 
     res.status(200).json({
       message: "User profile updated successfully",

@@ -5,6 +5,7 @@ const Users = require("../models/Users");
 const AdminAuditLog = require("../models/AdminAuditLog");
 const RolePermission = require("../models/RolePermission");
 const UserPermission = require("../models/UserPermission");
+const { resolvePhotoUrl } = require("../utils/upload");
 
 // Helper to sign JWT
 const generateToken = (user) => {
@@ -176,9 +177,7 @@ exports.login = async (req, res) => {
         name: user.name,
         firstName: user.firstName,
         lastName: user.lastName,
-        profilePhoto: user.profilePhoto
-          ? `${req.protocol}://${req.get("host")}${user.profilePhoto}`
-          : null,
+        profilePhoto: resolvePhotoUrl(req, user.profilePhoto),
         phone: user.phone,
         uid: user.uid,
         accessLevel: user.accessLevel,
@@ -340,9 +339,7 @@ exports.getMe = async (req, res) => {
       return res.status(404).json({ message: "User not found" });
     }
     const userObj = user.toObject();
-    if (userObj.profilePhoto) {
-      userObj.profilePhoto = `${req.protocol}://${req.get("host")}${userObj.profilePhoto}`;
-    }
+    userObj.profilePhoto = resolvePhotoUrl(req, userObj.profilePhoto);
     res.status(200).json(userObj);
   } catch (error) {
     console.error("getMe error:", error);

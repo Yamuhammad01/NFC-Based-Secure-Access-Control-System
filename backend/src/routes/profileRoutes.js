@@ -5,18 +5,38 @@ const path = require("path");
 const fs = require("fs");
 const authenticate = require("../middlewares/auth");
 const Users = require("../models/Users");
-const { getUploadsRoot, getUploadSubdir } = require("../utils/upload");
+const {
+  getUploadsRoot,
+  getUploadSubdir,
+  isRemoteUrl,
+  resolvePhotoUrl,
+} = require("../utils/upload");
+const {
+  isCloudinaryEnabled,
+  uploadImageBuffer,
+  deleteImageByUrl,
+  isCloudinaryUrl,
+} = require("../utils/cloudinary");
 
 // ──────────────────────────────────────────────
-//  Multer Storage Configuration
+//  Multer Storage Configuration (dual mode)
 // ──────────────────────────────────────────────
-// Locally: <backend>/uploads/profile-photos
-// On Vercel (serverless): /tmp/uploads/profile-photos (writable/ephemeral)
-const uploadDir = getUploadSubdir("profile-photos");
+// Cloudinary configured -> memory storage, buffer is streamed to the cloud
+//                          (persistent — works on Vercel).
+// Otherwise             -> disk storage:
+//                          locally:  <backend>/uploads/profile-photos
+//                          on Vercel: /tmp/uploads/profile-photos (ephemeral)
+//
+// The directory is created lazily (first upload only) so module import can
+// never fail on a read-only filesystem.
+const getUploadDir = () => getUploadSubdir("profile-photos");
 
-const storage = multer.diskStorage({
+const CLOUDINARY_FOLDER =
+  process.env.CLOUDINARY_FOLDER || "nfc-access-control/profile-photos";
+
+const diskStorage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, uploadDir);
+    cb(null, getUploadDir());
   },
   filename: (req, file, cb) => {
     // Sanitize original name and prepend userId + timestamp
@@ -39,10 +59,28 @@ const fileFilter = (req, file, cb) => {
 };
 
 const upload = multer({
-  storage,
+  // Cloudinary mode keeps the file in memory and streams it to the cloud;
+  // local mode writes to disk exactly as before.
+  storage: isCloudinaryEnabled() ? multer.memoryStorage() : diskStorage,
   fileFilter,
   limits: { fileSize: 5 * 1024 * 1024 }, // 5MB max
 });
+
+/** Deletes a previously stored photo (Cloudinary asset or local file). */
+const removeStoredPhoto = async (stored) => {
+  if (!stored) return;
+  if (isCloudinaryUrl(stored)) {
+    await deleteImageByUrl(stored);
+    return;
+  }
+  if (isRemoteUrl(stored)) return; // external URL — 
+  // Local disk file: "/uploads/profile-photos/<file>"
+  const relative = stored.replace(/^\/+/, "").replace(/^uploads\//, "");
+  const oldPhotoPath = path.join(getUploadsRoot(), relative);
+  if (fs.existsSync(oldPhotoPath)) {
+    fs.unlinkSync(oldPhotoPath);
+  }
+};
 
 // ──────────────────────────────────────────────
 //  GET /api/get/profile
@@ -64,9 +102,7 @@ router.get("/get/profile", authenticate, async (req, res) => {
       department: user.department,
       role: user.role,
       phone: user.phone,
-      profilePhoto: user.profilePhoto
-        ? `${req.protocol}://${req.get("host")}${user.profilePhoto}`
-        : null,
+      profilePhoto: resolvePhotoUrl(req, user.profilePhoto),
       jobTitle: user.jobTitle,
       position: user.position,
       uid: user.uid,
@@ -135,20 +171,25 @@ router.post("/add/profilePhoto", authenticate, (req, res) => {
         return res.status(400).json({ message: "No file uploaded. Please select a profile photo." });
       }
 
-      // Build the relative URL for the uploaded file
-      const photoUrl = `/uploads/profile-photos/${req.file.filename}`;
-
-      // Delete old photo if it exists (local file)
+      const useCloudinary = isCloudinaryEnabled();
       const currentUser = await Users.findById(req.user.userId);
-      if (currentUser && currentUser.profilePhoto) {
-        // profilePhoto is stored as "/uploads/profile-photos/<file>".
-        // Normalize it to a path relative to the active uploads root.
-        const relative = currentUser.profilePhoto.replace(/^\/uploads\//, "");
-        const oldPhotoPath = path.join(getUploadsRoot(), relative);
-        if (fs.existsSync(oldPhotoPath)) {
-          fs.unlinkSync(oldPhotoPath);
-        }
+      const previousPhoto = currentUser ? currentUser.profilePhoto : null;
+
+      let photoUrl;
+      if (useCloudinary) {
+        // Persist to Cloudinary — survives Vercel cold starts and redeploys.
+        const result = await uploadImageBuffer(req.file.buffer, {
+          folder: CLOUDINARY_FOLDER,
+          publicId: `user-${req.user.userId}-${Date.now()}`,
+        });
+        photoUrl = result.secure_url;
+      } else {
+        // Local/disk fallback (development, or Vercel without Cloudinary creds)
+        photoUrl = `/uploads/profile-photos/${req.file.filename}`;
       }
+
+      // Replace the previous photo only after the new one is safely stored.
+      await removeStoredPhoto(previousPhoto);
 
       // Update user's profilePhoto in DB
       await Users.findByIdAndUpdate(req.user.userId, { profilePhoto: photoUrl });
@@ -156,15 +197,19 @@ router.post("/add/profilePhoto", authenticate, (req, res) => {
       res.status(200).json({
         message: "Profile photo uploaded successfully",
         photoUrl,
+        storage: useCloudinary ? "cloudinary" : "local",
       });
     } catch (error) {
       console.error("profilePhoto upload error:", error);
-      // Clean up uploaded file on error
-      if (req.file) {
-        const filePath = path.join(uploadDir, req.file.filename);
+      // Clean up the freshly uploaded file on error
+      if (req.file && !isCloudinaryEnabled() && req.file.filename) {
+        const filePath = path.join(getUploadDir(), req.file.filename);
         if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
       }
-      res.status(500).json({ message: "Internal server error" });
+      const message = isCloudinaryEnabled()
+        ? "Failed to upload photo to cloud storage. Please try again."
+        : "Internal server error";
+      res.status(500).json({ message });
     }
   });
 });

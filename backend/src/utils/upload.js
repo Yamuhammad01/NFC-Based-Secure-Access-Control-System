@@ -17,9 +17,7 @@ function getUploadsRoot() {
 /**
  * Returns (and ensures) a subdirectory inside the uploads root,
  * e.g. getUploadSubdir("profile-photos") -> <root>/profile-photos.
- *
- * Never throws: a failure to create the dir must NOT crash the server at
- * startup (the exact bug that killed the app on Vercel).
+ 
  */
 function getUploadSubdir(subDir) {
   const dir = path.join(getUploadsRoot(), subDir);
@@ -31,4 +29,30 @@ function getUploadSubdir(subDir) {
   return dir;
 }
 
-module.exports = { getUploadsRoot, getUploadSubdir };
+/**
+ * True for values that are already fully qualified URLs (Cloudinary assets,
+ * external links, data URIs) 
+ */
+function isRemoteUrl(value) {
+  return (
+    typeof value === "string" &&
+    (/^https?:\/\//i.test(value) || /^\/\//.test(value) || value.startsWith("data:"))
+  );
+}
+
+/**
+ * Resolves a stored `profilePhoto` value into a URL the browser can load.
+ *
+ * - Legacy/disk storage: value is a relative path ("/uploads/profile-photos/x.jpg")
+ *   -> prefixed with the request's protocol + host (unchanged behaviour).
+ * - Cloudinary storage: value is already "https://res.cloudinary.com/..."
+ *   -> returned as-is (prevents "https://api.host/https://res.cloudinary.com/...").
+ */
+function resolvePhotoUrl(req, stored) {
+  if (!stored) return null;
+  if (isRemoteUrl(stored)) return stored;
+  const base = `${req.protocol}://${req.get("host")}`;
+  return stored.startsWith("/") ? `${base}${stored}` : `${base}/${stored}`;
+}
+
+module.exports = { getUploadsRoot, getUploadSubdir, isRemoteUrl, resolvePhotoUrl };
