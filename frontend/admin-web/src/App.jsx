@@ -1,17 +1,14 @@
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
+import LandingPage from './pages/Landing/LandingPage';
 import LoginForm from './pages/Auth/login';
 import Register from './pages/Auth/register';
 import ForgotPassword from './pages/Auth/forgotPassword';
 import ResetPassword from './pages/Auth/resetPassword';
 import ForcePasswordChange from './pages/Auth/forcePasswordChange';
 import DashboardOverview from './pages/dashboard/admin/DashboardOverview';
-import BusinessCard from './pages/dashboard/staff/BusinessCard';
-import StaffId from './pages/dashboard/staff/staffId';
-import StaffProfile from './pages/dashboard/staff/Profile';
-import StudentProfile from './pages/dashboard/student/Profile';
-import Settings from './pages/dashboard/staff/settings';
+import AuditLogs from './pages/dashboard/admin/auditLogs';
 import UsersPage from './pages/dashboard/admin/Users';
 import EmployeeTable from './pages/dashboard/admin/employees';
 import CardManagement from './pages/dashboard/admin/cards';
@@ -19,6 +16,10 @@ import RolePermissions from './pages/dashboard/admin/RolePermissions';
 import TemporaryAccessRequests from './pages/dashboard/admin/TemporaryAccessRequests';
 
 // Generic staff/student pages
+import StaffId from './pages/dashboard/staff/staffId';
+import StaffProfile from './pages/dashboard/staff/Profile';
+import StudentProfile from './pages/dashboard/student/Profile';
+import Settings from './pages/dashboard/staff/settings';
 import StaffPermissions from './pages/dashboard/staff/permissions';
 import StaffLogs from './pages/dashboard/staff/logs';
 import StaffTimeline from './pages/dashboard/staff/timeline';
@@ -26,8 +27,8 @@ import CardReplacement from './pages/dashboard/staff/replacement';
 import SecurityNotifications from './pages/dashboard/staff/notifications';
 import TempAccessRequest from './pages/dashboard/staff/tempAccess';
 
-// Component to handle root redirects based on URL hash
-function RootRedirect() {
+// Component to handle root landing page and recovery tokens
+function RootRoute() {
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -42,27 +43,24 @@ function RootRedirect() {
       if (accessToken && type === 'recovery') {
         // Redirect to reset password page with the hash
         navigate('/resetPassword' + location.hash);
-        return;
       }
     }
-    
-    // Default redirect to login
-    navigate('/login');
   }, [navigate, location]);
 
-  return null; // This component doesn't render anything
+  return <LandingPage />;
 }
 
 function App() {
   return (
     <Router>
       <Routes>
-        <Route path="/" element={<RootRedirect />} />
+        <Route path="/" element={<RootRoute />} />
         <Route path="/login" element={<LoginForm />} />
         <Route path="/register" element={<Register />} />
         <Route path="/forgotPassword" element={<ForgotPassword />} />
         <Route path="/resetPassword" element={<ResetPassword />} />
         <Route path="/force-password-change" element={<ForcePasswordChange />} />
+        
         {/* Admin routes */}
         <Route path="/dashboard/admin" element={<DashboardOverview />} />
         <Route path="/dashboard/admin/users" element={<UsersPage />} />
