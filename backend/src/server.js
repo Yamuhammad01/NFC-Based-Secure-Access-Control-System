@@ -6,6 +6,7 @@ const helmet = require("helmet");
 const morgan = require("morgan");
 const rateLimit = require("express-rate-limit");
 const path = require("path");
+const mongoose = require("mongoose");
 
 const connectDB = require("./config/db");
 const errorHandler = require("./middlewares/errorHandler");
@@ -67,15 +68,21 @@ app.use("/uploads", express.static(getUploadsRoot()));
 
 // ──────────────────────────────────────────────
 //  Ensure MongoDB is connected before handling ANY request.
-//  Without this, requests arriving during a serverless cold start buffer in
-//  Mongoose for 10s, then fail with "buffering timed out" (HTTP 500).
+//  If the DB is unavailable, respond with 503 Service Unavailable.
 // ──────────────────────────────────────────────
 app.use(async (req, res, next) => {
   try {
     await ensureDB();
+    if (mongoose.connection.readyState !== 1) {
+      throw new Error("MongoDB connection is not ready");
+    }
     next();
   } catch (err) {
-    next(err);
+    console.error("DB unavailable for request:", err.message);
+    res.status(503).json({
+      message:
+        "Service temporarily unavailable: could not reach the database. Please try again shortly.",
+    });
   }
 });
 
