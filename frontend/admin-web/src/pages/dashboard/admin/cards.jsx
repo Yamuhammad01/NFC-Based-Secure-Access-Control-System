@@ -313,11 +313,11 @@ const CardManagement = () => {
       {/* ── Toast ── */}
       <Toast toast={toast} onClose={() => setToast(null)} />
 
-      <div className="space-y-6">
+      <div className="p-4 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
         {/* ── Page Header ── */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-extrabold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900 flex items-center gap-2">
               <FaIdCard className="text-emerald-600" />
               NFC Card Management
             </h1>
@@ -345,7 +345,7 @@ const CardManagement = () => {
         </div>
 
         {/* ── Stats Row ── */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <StatCard label="Total Cards" value={stats.total} colorClass="text-gray-800"
             bgClass="bg-white" icon={<FaIdCard className="text-gray-500 text-xl" />} />
           <StatCard label="Active" value={stats.active} colorClass="text-emerald-600"
@@ -410,7 +410,7 @@ const CardManagement = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="w-full text-sm">
+              <table className="table w-full min-w-[1050px] border-collapse align-middle">
                 <thead>
                   <tr className="bg-gradient-to-r from-slate-50 to-gray-100 border-b border-gray-200">
                     {["UID", "User", "Status", "Revoke Reason", "Issue Date", "Last Used", "Actions"].map((h) => (
@@ -580,15 +580,15 @@ const CardManagement = () => {
             </div>
 
             <form onSubmit={handleIssueCard} className="px-6 py-6 space-y-4">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="col-span-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="col-span-1 sm:col-span-2">
                   <label className="block text-xs font-bold text-gray-600 mb-1.5">Cardholder Name *</label>
                   <input type="text" required value={issueForm.name}
                     onChange={(e) => setIssueForm((f) => ({ ...f, name: e.target.value }))}
                     className="w-full px-4 py-2.5 rounded-xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-emerald-400"
                     placeholder="e.g. Aisha Bello" />
                 </div>
-                <div className="col-span-2">
+                <div className="col-span-1 sm:col-span-2">
                   <label className="block text-xs font-bold text-gray-600 mb-1.5">NFC Card UID *</label>
                   <input type="text" required value={issueForm.uid}
                     onChange={(e) => setIssueForm((f) => ({ ...f, uid: e.target.value.toUpperCase() }))}
@@ -708,7 +708,7 @@ const CardManagement = () => {
           </div>
           <div>
             <label className="block text-xs font-bold text-gray-600 mb-2">Select Revocation Reason *</label>
-            <div className="grid grid-cols-2 gap-2">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
               {REVOKE_REASONS.map((r) => (
                 <button
                   key={r.value}

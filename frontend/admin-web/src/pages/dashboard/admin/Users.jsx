@@ -286,11 +286,11 @@ const UsersPage = () => {
         />
       )}
 
-      <div className="space-y-6 pb-12">
+      <div className="p-4 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
               User Management
             </h1>
             <p className="text-sm text-gray-500 mt-1">
@@ -309,7 +309,7 @@ const UsersPage = () => {
         </div>
 
         {/* Counter cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white/70 backdrop-blur border border-gray-100 p-5 rounded-2xl shadow-sm flex items-center justify-between">
             <div>
               <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total users</span>
@@ -373,7 +373,7 @@ const UsersPage = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap md:flex-nowrap items-center gap-3">
+            <div className="flex flex-wrap md:flex-nowrap items-center gap-3 w-full md:w-auto">
               
               {/* Department Filter */}
               <div className="relative flex-1 md:w-48">

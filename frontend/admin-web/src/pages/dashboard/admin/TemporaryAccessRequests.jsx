@@ -185,10 +185,10 @@ const TemporaryAccessRequests = () => {
         />
       )}
 
-      <div className="space-y-6 pb-12">
+      <div className="p-4 lg:p-8 space-y-6 max-w-[1600px] mx-auto">
         {/* Page Header */}
         <div>
-          <h1 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Temporary Access Requests
           </h1>
           <p className="text-sm text-gray-500 mt-1">
@@ -197,7 +197,7 @@ const TemporaryAccessRequests = () => {
         </div>
 
         {/* Counter cards */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           <div className="bg-white/70 backdrop-blur border border-gray-100 p-5 rounded-2xl shadow-sm flex items-center justify-between">
             <div>
               <span className="text-xs text-gray-500 font-semibold uppercase tracking-wider">Total Requests</span>
@@ -254,7 +254,7 @@ const TemporaryAccessRequests = () => {
             </div>
 
             {/* Filters */}
-            <div className="flex flex-wrap md:flex-nowrap items-center gap-3">
+            <div className="flex flex-wrap md:flex-nowrap items-center gap-3 w-full md:w-auto">
               {/* Status Filter */}
               <div className="relative flex-1 md:w-40">
                 <span className="absolute inset-y-0 left-0 pl-3.5 flex items-center text-gray-400 pointer-events-none">
