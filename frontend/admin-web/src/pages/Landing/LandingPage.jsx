@@ -208,34 +208,7 @@ export default function LandingPage() {
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900 flex flex-col font-sans selection:bg-indigo-500 selection:text-white">
-      {/* ── TOP ANNOUNCEMENT BANNER ── */}
-      <aside aria-label="System announcement" className="bg-gradient-to-r from-indigo-900 via-blue-900 to-indigo-950 text-white text-xs py-2 px-4 border-b border-indigo-800/40">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-center sm:text-left">
-          <div className="flex items-center gap-2 justify-center">
-            <span className="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold bg-indigo-500/30 text-indigo-200 border border-indigo-400/30 uppercase tracking-wide">
-              Live Demo Ready
-            </span>
-            <span className="text-indigo-100">
-              Enterprise NFC Physical Access Control, Hardware Simulation & Audit Intelligence
-            </span>
-          </div>
-          <div className="flex items-center gap-3 text-indigo-200 text-[11px]">
-            <span className="flex items-center gap-1">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-              API & Cloud Services Active
-            </span>
-            <span className="hidden md:inline text-indigo-400">•</span>
-            <a
-              href="https://nfc-based-secure-access-control-sys-five.vercel.app/"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="text-white hover:text-indigo-200 underline font-medium flex items-center gap-1"
-            >
-              Open Scanner Terminal <FaExternalLinkAlt className="text-[10px]" />
-            </a>
-          </div>
-        </div>
-      </aside>
+      
 
       {/* ── NAVBAR ── */}
       <header className="sticky top-0 z-50 backdrop-blur-md bg-white/90 border-b border-slate-200/80 transition-all">
